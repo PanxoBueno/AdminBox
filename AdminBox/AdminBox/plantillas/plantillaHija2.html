@@ -1,0 +1,42 @@
+{% extends "plantillaPadre.html" %}
+
+{% block title %}Bienvenido - Box LeytonLabs{% endblock %}
+{% load static %}
+{% block extra_css %}
+<link type="text/css" href='{% static "css/plantillasHijas.css" %}' rel="stylesheet"/>
+{% endblock %}
+
+{% block content %}
+<div class="welcome-container">
+ 
+    <div class="welcome-message">
+        <h2>Bienvenido</h2>
+        <p>Estás afiliado al Box LeytonLabs</p>
+        <span class="affiliation-badge">Miembro Activo</span>
+    </div>
+    <div class="logo-container">
+        <!-- Reemplaza con la ruta correcta a tu logo -->
+        <img src='{% static "imagenes/leyton.jpg" %}' class="logo">
+    </div>
+    
+    <div class="user-stats">
+        <div class="stat-card">
+            <h3>Próxima Clase</h3>
+            <p>CrossFit</p>
+            <p>Mañana 8:00 AM</p>
+        </div>
+        
+        <div class="stat-card">
+            <h3>Tus Estadísticas</h3>
+            <p>12 clases este mes</p>
+            <p>77kg / 175cm</p>
+        </div>
+        
+        <div class="stat-card">
+            <h3>Tu Entrenador</h3>
+            <p>Coach Martínez</p>
+            <p>Disponible para consultas</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
