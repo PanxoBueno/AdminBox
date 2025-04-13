@@ -168,3 +168,111 @@ footer {
         font-size: 2rem;
     }
 }
+.admin-login-container {
+    background-color: rgba(26, 26, 26, 0.9);
+    padding: 40px;
+    border-radius: 10px;
+    border: 2px solid var(--primary);
+    margin: 50px auto;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.admin-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.admin-header h2 {
+    color: var(--primary);
+    font-size: 2.2rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+}
+
+.admin-logo {
+    max-width: 200px;
+    margin: 0 auto 20px;
+    display: block;
+    filter: drop-shadow(0 0 8px rgba(255, 95, 0, 0.3));
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    color: var(--primary);
+    margin-bottom: 8px;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: rgba(255,255,255,0.1);
+    border: 2px solid var(--primary);
+    border-radius: 5px;
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background-color: rgba(255,255,255,0.2);
+    box-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
+}
+
+.admin-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.admin-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: var(--dark);
+}
+
+.btn-primary:hover {
+    background-color: #FF8C00;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 95, 0, 0.4);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+}
+
+.btn-secondary:hover {
+    background-color: rgba(255, 95, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.admin-footer {
+    text-align: center;
+    margin-top: 30px;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.8rem;
+}

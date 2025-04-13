@@ -5,8 +5,9 @@ from django.template import Template, Context
 from django.shortcuts import render
 from django.template.loader import get_template
 
-def bienvenida(request):
-    return HttpResponse('Bienvenido a AdminBox')
+
+def paginaLogin(request):
+    return render(request, 'index.html')
 
 def categoriaEdad(request, edad):
     if edad >= 18:
@@ -35,5 +36,5 @@ def plantillaShortcut(request):
 def plantillaHija(request):
     return render(request, 'plantillaHija.html',{})
 
-def plantillaHija2(request):
-    return render(request, 'plantillaHija2.html',{})
+def paginaInicio(request):
+    return render(request, 'paginaInicio.html')

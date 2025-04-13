@@ -16,14 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from AdminBox.views import categoriaEdad, obtenerFechaActual, plantillaForm,plantillaShortcut,plantillaHija,plantillaHija2
+from AdminBox.views import *
 
 urlpatterns = [
+    path('', paginaLogin),
+    path('paginaInicio/', paginaInicio, name='Inicio'),
     path('admin/', admin.site.urls),
-    path('categoriaEdad/<int:edad>',categoriaEdad),
-    path('obtenerFecha/',obtenerFechaActual),
     path('plantillaForm/',plantillaForm),
     path('plantillaShortcut/',plantillaShortcut),
     path('plantillaHija/',plantillaHija),
-    path('plantillaHija2/',plantillaHija2),
+
 ]
