@@ -1,31 +1,4 @@
-# AdminBox - Gestión de Gimnasio 🏋️‍♂️
-
-AdminBox es una plataforma web desarrollada en **Django** para la gestión de miembros, entrenadores y administradores en un gimnasio de CrossFit.
-
-## Requisitos Previos 📋
-Antes de instalar la aplicación, asegúrate de tener instalado:
-- **Python 3.8** o superior
-- **pip** (gestor de paquetes de Python)
-- **Virtualenv** (recomendado)
-- **PostgreSQL** (opcional, puede usarse SQLite)
-
-## Instalación 🛠️
-Sigue estos pasos para configurar el proyecto en tu entorno local:
-
-1. **Clonar el repositorio:**
-   ```bash
-   git clone https://github.com/tu-usuario/gym_app.git
-   cd gym_app
-python -m venv venv
-# En Windows:
-venv\Scripts\activate
-# En Linux/Mac:
-source venv/bin/activate
-
-
-
-
-# AdmiBox
+# AdmiBox 🏋️‍♂️
 
 AdmiBox es una plataforma web diseñada para gestionar gimnasios de CrossFit, facilitando la administración de atletas, entrenadores y administradores. Su objetivo es unificar y centralizar la información relacionada con rutinas, reservas, marcas personales y la comunidad deportiva.
 
@@ -36,7 +9,7 @@ AdmiBox es una plataforma web diseñada para gestionar gimnasios de CrossFit, fa
 - **Gestión de Administradores**: Control de reservas, administración de usuarios y gestión de la comunidad.
 - **Comunidad Deportiva**: Espacio para la interacción entre atletas y entrenadores, compartiendo logros y motivación.
 
-## Tecnologías Utilizadas
+## Tecnologías Utilizadas 📋
 
 - **Framework**: Django 5.2
 - **Lenguaje de Programación**: Python 3.8
@@ -47,7 +20,7 @@ AdmiBox es una plataforma web diseñada para gestionar gimnasios de CrossFit, fa
 
 1. Clona el repositorio:
     ```bash
-    git clone https://github.com/tu_usuario/AdmiBox.git
+    git clone https://github.com/PanxoBueno/AdmiBox.git
     ```
 
 2. Navega al directorio del proyecto:
@@ -76,6 +49,7 @@ AdmiBox es una plataforma web diseñada para gestionar gimnasios de CrossFit, fa
 
 5. Realiza las migraciones:
     ```bash
+    python manage.py makemigrations
     python manage.py migrate
     ```
 
