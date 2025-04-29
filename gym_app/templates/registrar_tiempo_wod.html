@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Registrar Tiempo WOD - {{ clase.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h2 class="mb-0">
+                <i class="bi bi-stopwatch"></i> Registrar/Actualizar Tiempo WOD - {{ clase.nombre }}
+            </h2>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Atleta</label>
+                        {{ form.atleta }}
+                        {% if form.atleta.errors %}
+                            <div class="text-danger">{{ form.atleta.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Minutos</label>
+                        {{ form.tiempo_minutos }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Segundos</label>
+                        {{ form.tiempo_segundos }}
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-save"></i> Guardar Tiempo
+                    </button>
+                    <a href="{% url 'detalle_clase_entrenador' clase.id %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                    <a href="{% url 'ver_ranking_wod' clase.id %}" class="btn btn-outline-primary ms-2">
+                        <i class="bi bi-trophy"></i> Ver Ranking
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

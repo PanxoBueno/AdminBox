@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Ranking WOD - {{ clase.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-danger">
+            <i class="bi bi-trophy"></i> Ranking WOD - {{ clase.nombre }}
+        </h1>
+        <div>
+            <a href="{% url 'registrar_tiempo_wod' clase.id %}" class="btn btn-danger">
+                <i class="bi bi-stopwatch"></i> Registrar Tiempo
+            </a>
+            <a href="{% url 'detalle_clase_entrenador' clase.id %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-danger">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-danger">
+                        <tr>
+                            <th>Posición</th>
+                            <th>Atleta</th>
+                            <th>Nivel</th>
+                            <th>Tiempo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in ranked_results %}
+                        <tr>
+                            <td>
+                                {% if result.position == 1 %}
+                                <span class="badge bg-warning text-dark">1°</span>
+                                {% elif result.position == 2 %}
+                                <span class="badge bg-secondary">2°</span>
+                                {% elif result.position == 3 %}
+                                <span class="badge bg-danger">3°</span>
+                                {% else %}
+                                {{ result.position }}°
+                                {% endif %}
+                            </td>
+                            <td>{{ result.ranking.atleta.nombre }} {{ result.ranking.atleta.apellido }}</td>
+                            <td>{{ result.ranking.atleta.get_nivel_display }}</td>
+                            <td>{{ result.ranking.tiempo_formateado }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4">
+                                <i class="bi bi-info-circle" style="font-size: 2rem;"></i>
+                                <p class="mt-2">No hay tiempos registrados para esta clase</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

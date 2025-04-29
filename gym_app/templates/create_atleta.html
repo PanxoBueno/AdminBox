@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar Atleta{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0"><i class="bi bi-person-plus"></i> Registrar Nuevo Atleta</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="id_nombre" class="form-label">Nombre</label>
+                            {{ form.nombre }}
+                            <div class="invalid-feedback">
+                                Por favor ingresa un nombre válido.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_apellido" class="form-label">Apellido</label>
+                            {{ form.apellido }}
+                            <div class="invalid-feedback">
+                                Por favor ingresa un apellido válido.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_nivel" class="form-label">Nivel</label>
+                            {{ form.nivel }}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_plan" class="form-label">Plan</label>
+                            {{ form.plan }}
+                        </div>
+                        <div class="col-12">
+                            <label for="id_email" class="form-label">Email</label>
+                            {{ form.email }}
+                            <div class="invalid-feedback">
+                                Por favor ingresa un email válido.
+                            </div>
+                        </div>
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="bi bi-save"></i> Guardar
+                            </button>
+                            <a href="{% url 'listar_atleta' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Validación del formulario
+(function () {
+  'use strict'
+
+  // Obtener todos los formularios a los que queremos aplicar estilos de validación de Bootstrap personalizados
+  var forms = document.querySelectorAll('.needs-validation')
+
+  // Bucle sobre ellos y evitar el envío
+  Array.prototype.slice.call(forms)
+    .forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+
+        form.classList.add('was-validated')
+      }, false)
+    })
+})()
+</script>
+{% endblock %}

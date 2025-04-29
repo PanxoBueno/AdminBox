@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>Borrar Atleta</h2>
+  <p>¿Confirmas la eliminación del atleta <strong>{{ atleta.nombre }} {{ atleta.apellido }}</strong>?</p>
+  <form method="POST">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Confirmar</button>
+    <a class="btn btn-secondary" href="{% url 'menu' %}">Cancelar</a>
+  </form>
+{% endblock %}

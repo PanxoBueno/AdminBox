@@ -1,0 +1,94 @@
+/* Importación de fuentes de Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700&display=swap');
+
+body {
+  background-color: #121212;
+  color: #FFFFFF;
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Barra de navegación */
+.navbar {
+  background: linear-gradient(135deg, #D62828, #EF233C);
+  border-bottom: 3px solid #EF233C;
+}
+
+.navbar-brand {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 2rem;
+  color: #FFFFFF !important;
+  letter-spacing: 2px;
+}
+
+.navbar-nav .nav-link {
+  font-size: 1.1rem;
+  color: #FFFFFF !important;
+  transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #FFD700 !important;
+}
+
+/* Títulos y contenedores */
+.container h1,
+.container h2 {
+  color: #EF233C;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+/* Botones personalizados */
+.btn-primary {
+  background: linear-gradient(45deg, #D62828, #EF233C);
+  border: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(45deg, #EF233C, #D62828);
+}
+
+.btn-danger,
+.btn-warning,
+.btn-success {
+  font-weight: 600;
+  transition: transform 0.2s ease;
+}
+
+.btn-danger:hover,
+.btn-warning:hover,
+.btn-success:hover {
+  transform: scale(1.05);
+}
+
+/* Tarjetas (Cards) */
+.card {
+  background-color: #1e1e1e;
+  border: 2px solid #EF233C;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.card-title {
+  color: #FFD700;
+}
+
+/* Enlaces */
+a {
+  color: #EF233C;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: #FFD700;
+}
+
+/* Listados (List group) */
+.list-group-item {
+  background-color: #1e1e1e;
+  border: none;
+  border-bottom: 1px solid #333;
+  color: #fff;

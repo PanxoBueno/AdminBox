@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2 class="mb-4" style="color: #dc3545;">Registrar Marca Personal</h2>
+  
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+  
+  <form method="POST">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="atleta" class="form-label">Atleta</label>
+      <select name="atleta_id" id="atleta" class="form-select" required>
+        <option value="">Seleccionar atleta</option>
+        {% for atleta in atletas %}
+          <option value="{{ atleta.id }}" {% if request.GET.atleta_id == atleta.id|stringformat:"s" %}selected{% endif %}>
+            {{ atleta.nombre }} {{ atleta.apellido }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    
+    <div class="row">
+      <div class="col-md-6">
+        {{ form.ejercicio_id.label_tag }}
+        {{ form.ejercicio_id }}
+        {{ form.ejercicio_id.errors }}
+      </div>
+      <div class="col-md-6">
+        {{ form.peso_lb.label_tag }}
+        {{ form.peso_lb }}
+        {{ form.peso_lb.errors }}
+      </div>
+    </div>
+    
+    <div class="row mt-3">
+      <div class="col-md-6">
+        {{ form.fecha.label_tag }}
+        {{ form.fecha }}
+        {{ form.fecha.errors }}
+      </div>
+      <div class="col-md-6">
+        {{ form.comentarios.label_tag }}
+        {{ form.comentarios }}
+      </div>
+    </div>
+    
+    <div class="mt-4">
+      <button class="btn btn-success" type="submit">Guardar</button>
+      <a class="btn btn-secondary" href="{% url 'menu' %}">Cancelar</a>
+    </div>
+  </form>
+{% endblock %}

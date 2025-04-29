@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio - CrossFit Box{% endblock %}
+
+{% block content %}
+<div class="hero-section text-center rounded-3">
+    <h1 class="display-4 fw-bold">BIENVENIDO A ADMINBOX</h1>
+    <p class="lead">Entrena con los mejores. Supera tus límites.</p>
+    <div class="mt-4">
+        <a href="{% url 'listar_atleta' %}" class="btn btn-primary btn-lg me-2">Ver Atletas</a>
+        <a href="{% url 'listar_clases' %}" class="btn btn-outline-light btn-lg">Ver Clases</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-people-fill text-accent display-4 mb-3"></i>
+                <h3 class="card-title">Gestión de Atletas</h3>
+                <p class="card-text">Administra la información de todos los atletas del box.</p>
+                <a href="{% url 'crear_atleta' %}" class="btn btn-primary">Registrar Atleta</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-person-badge-fill text-accent display-4 mb-3"></i>
+                <h3 class="card-title">Gestión de Entrenadores</h3>
+                <p class="card-text">Administra la información de los entrenadores.</p>
+                <a href="{% url 'crear_entrenador' %}" class="btn btn-primary">Registrar Entrenador</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-calendar-check-fill text-accent display-4 mb-3"></i>
+                <h3 class="card-title">Gestión de Clases</h3>
+                <p class="card-text">Programa y gestiona las clases del box.</p>
+                <a href="{% url 'crear_clase' %}" class="btn btn-primary">Crear Clase</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">Últimos Atletas Registrados</h3>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for atleta in atletas|slice:":5" %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ atleta.nombre }} {{ atleta.apellido }}
+                        <span class="badge bg-primary rounded-pill">{{ atleta.nivel }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <a href="{% url 'listar_atleta' %}" class="btn btn-outline-primary mt-3">Ver Todos</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">Entrenadores</h3>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for entrenador in entrenadores|slice:":3" %}
+                    <li class="list-group-item">
+                        <strong>{{ entrenador.nombre }} {{ entrenador.apellido }}</strong> - {{ entrenador.especialidad | title }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                <a href="{% url 'listar_clases' %}" class="btn btn-outline-primary mt-3">Ver Calendario</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

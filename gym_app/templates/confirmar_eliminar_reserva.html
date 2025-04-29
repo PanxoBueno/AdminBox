@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Eliminar Reserva{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h2 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Confirmar Eliminación</h2>
+        </div>
+        <div class="card-body">
+            <p>¿Estás seguro que deseas eliminar a <strong>{{ reserva.atleta.nombre }} {{ reserva.atleta.apellido }}</strong> de la clase <strong>{{ reserva.clase.nombre }}</strong>?</p>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Confirmar Eliminación
+                </button>
+                <a href="{% url 'detalle_clase_entrenador' reserva.clase.id %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Cancelar
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

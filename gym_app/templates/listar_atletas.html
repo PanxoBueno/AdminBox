@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Atletas{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-people-fill"></i> Lista de Atletas</h1>
+    <div>
+        <a href="{% url 'crear_atleta' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nuevo Atleta
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-8">
+                <input type="text" name="q" class="form-control" placeholder="Buscar atletas..." value="{{ query }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a href="{% url 'listar_atleta' %}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Nivel</th>
+                        <th>Plan</th>
+                        <th>Email</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for atleta in atletas %}
+                    <tr>
+                        <td>{{ atleta.nombre }}</td>
+                        <td>{{ atleta.apellido }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if atleta.nivel == 'elite' %}bg-danger
+                                {% elif atleta.nivel == 'rx' %}bg-warning text-dark
+                                {% elif atleta.nivel == 'scaled' %}bg-primary
+                                {% elif atleta.nivel == 'rookie' %}bg-info text-dark
+                                {% else %}bg-secondary
+                                {% endif %}">
+                                {{ atleta.get_nivel_display }}
+                            </span>
+                        </td>
+                        <td>{{ atleta.get_plan_display }}</td>
+                        <td>{{ atleta.email }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'modificar_atleta' atleta.pk %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'borrar_atleta' atleta.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                                <a href="{% url 'dashboard_atleta' atleta.pk %}" class="btn btn-sm btn-outline-success" title="Dashboard">
+                                    <i class="bi bi-graph-up"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">No hay atletas registrados</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if atletas.has_other_pages %}
+        <div class="card-footer">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if atletas.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ atletas.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo;</span>
+                    </li>
+                    {% endif %}
+                    
+                    {% for i in atletas.paginator.page_range %}
+                    {% if atletas.number == i %}
+                    <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                    {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ i }}{% if query %}&q={{ query }}{% endif %}">{{ i }}</a></li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if atletas.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ atletas.next_page_number }}{% if query %}&q={{ query }}{% endif %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

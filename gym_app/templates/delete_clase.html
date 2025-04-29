@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>Borrar Clase</h2>
+  <p>¿Confirmas la eliminación de la clase <strong>{{ clase.nombre }}</strong>?</p>
+  <form method="POST">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Confirmar</button>
+    <a class="btn btn-secondary" href="{% url 'listar_clases' %}">Cancelar</a>
+  </form>
+{% endblock %}

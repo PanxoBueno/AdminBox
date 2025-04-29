@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Reservar Clase{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h2 class="mb-0"><i class="bi bi-calendar-plus"></i> Reservar Clase</h2>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="id_atleta" class="form-label">Atleta</label>
+                        {{ form.atleta }}
+                        <div class="invalid-feedback">
+                            Por favor selecciona un atleta.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_clase" class="form-label">Clase</label>
+                        {{ form.clase }}
+                        <div class="invalid-feedback">
+                            Por favor selecciona una clase.
+                        </div>
+                        <div id="clase-info" class="mt-2">
+                            <!-- Aquí se mostrará la información de disponibilidad -->
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-danger me-2" id="submit-btn">
+                            <i class="bi bi-check-circle"></i> Confirmar Reserva
+                        </button>
+                        <a href="{% url 'listar_clases' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Validación del formulario
+(function () {
+  'use strict'
+  var forms = document.querySelectorAll('.needs-validation')
+  Array.prototype.slice.call(forms)
+    .forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+        form.classList.add('was-validated')
+      }, false)
+    })
+})()
+
+// Mostrar información de disponibilidad cuando se selecciona una clase
+document.getElementById('id_clase').addEventListener('change', function() {
+    const claseId = this.value;
+    const infoDiv = document.getElementById('clase-info');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    if (!claseId) {
+        infoDiv.innerHTML = '';
+        submitBtn.disabled = false;
+        return;
+    }
+    
+    // Hacer una petición AJAX para obtener los datos de la clase
+    fetch(`/get_clase_info/${claseId}/`)
+        .then(response => response.json())
+        .then(data => {
+            let html = '';
+            const porcentaje = (data.reservas_count / data.capacidad_maxima) * 100;
+            
+            if (data.lleno) {
+                html = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill"></i> 
+                        <strong>Clase llena</strong> - No hay cupos disponibles (${data.reservas_count}/${data.capacidad_maxima})
+                    </div>
+                `;
+                submitBtn.disabled = true;
+            } else {
+                html = `
+                    <div class="alert alert-${porcentaje > 80 ? 'warning' : 'success'}">
+                        <i class="bi bi-${porcentaje > 80 ? 'exclamation-triangle-fill' : 'check-circle-fill'}"></i> 
+                        <strong>${data.disponible} cupo${data.disponible !== 1 ? 's' : ''} disponible${data.disponible !== 1 ? 's' : ''}</strong> 
+                        (${data.reservas_count}/${data.capacidad_maxima})
+                        <div class="progress mt-2" style="height: 8px;">
+                            <div class="progress-bar bg-${porcentaje > 80 ? 'warning' : 'success'}" 
+                                 role="progressbar" 
+                                 style="width: ${porcentaje}%" 
+                                 aria-valuenow="${data.reservas_count}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="${data.capacidad_maxima}">
+                            </div>
+                        </div>
+                        ${porcentaje > 80 ? '<small class="text-muted">Quedan pocos cupos disponibles</small>' : ''}
+                    </div>
+                `;
+                submitBtn.disabled = false;
+            }
+            
+            infoDiv.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            infoDiv.innerHTML = '<div class="alert alert-secondary">No se pudo obtener la información de disponibilidad</div>';
+            submitBtn.disabled = false;
+        });
+});
+</script>
+{% endblock %}

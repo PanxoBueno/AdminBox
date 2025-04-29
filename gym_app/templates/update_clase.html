@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Modificar Clase{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h2 class="mb-0"><i class="bi bi-pencil"></i> Modificar Clase: {{ clase.nombre }}</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="btn btn-warning" type="submit">Actualizar</button>
+                <a class="btn btn-secondary" href="{% url 'listar_clases' %}">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
