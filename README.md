@@ -23,7 +23,6 @@ venv\Scripts\activate
 source venv/bin/activate
 
 
-¡Claro! Aquí tienes un ejemplo de README para tu plataforma web AdmiBox:
 
 ```markdown
 # AdmiBox
