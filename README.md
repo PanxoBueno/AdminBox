@@ -24,7 +24,7 @@ source venv/bin/activate
 
 
 
-```markdown
+
 # AdmiBox
 
 AdmiBox es una plataforma web diseñada para gestionar gimnasios de CrossFit, facilitando la administración de atletas, entrenadores y administradores. Su objetivo es unificar y centralizar la información relacionada con rutinas, reservas, marcas personales y la comunidad deportiva.
