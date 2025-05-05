@@ -26,9 +26,16 @@ SECRET_KEY = 'django-insecure-3u7)&v=u@rbyud@vg#r(5wy(+&$w2ne*ub#d+)5vyj%g&bj@sl
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+#AUTH_USER_MODEL = 'gym_app'
+#LOGIN_URL = 'login'
+#LOGIN_REDIRECT_URL = 'menu'
+#LOGOUT_REDIRECT_URL = 'login'
+
 ALLOWED_HOSTS = []
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+AUTH_USER_MODEL = 'gym_app.Usuario'
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'menu'
+LOGOUT_REDIRECT_URL = 'login'
 
 # Application definition
 
@@ -82,9 +89,13 @@ WSGI_APPLICATION = 'AdminBoxes.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+      'ENGINE': 'django.db.backends.mysql',  # Motor de base de datos
+      'NAME': 'gym_app',
+      'USER': 'root',
+      'PASSWORD': 'Agosto1026/*-',
+      'HOST': '127.0.0.1',
+      'PORT': '3306',
+  }
 }
 
 
@@ -134,7 +145,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-AUTH_USER_MODEL = 'gym_app.Usuario'
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'menu'
-LOGOUT_REDIRECT_URL = 'login'
+
