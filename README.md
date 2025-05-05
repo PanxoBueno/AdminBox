@@ -77,10 +77,6 @@ AdmiBox es una plataforma web diseñada para gestionar gimnasios de CrossFit, fa
 4. Haz push a la rama (`git push origin feature/nueva-caracteristica`).
 5. Abre un Pull Request.
 
-## Licencia
-
-Este proyecto está bajo la Licencia MIT. Consulta el archivo LICENSE para más detalles.
-
 ---
 
 ¡Gracias por usar AdmiBox! Si tienes alguna pregunta o sugerencia, no dudes en contactar.
