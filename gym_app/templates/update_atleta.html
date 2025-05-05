@@ -1,10 +1,35 @@
 {% extends 'base.html' %}
 {% block content %}
-  <h2 class="mb-4" style="color: #dc3545;">Modificar Atleta: {{ atleta.nombre }} {{ atleta.apellido }}</h2>
+  <h2 class="mb-4" style="color: #dc3545;">Modificar Atleta: {{ atleta.get_full_name }}</h2>
   <form method="POST">
     {% csrf_token %}
     {{ form.as_p }}
     <button class="btn btn-warning" type="submit">Actualizar</button>
-    <a class="btn btn-secondary" href="{% url 'menu' %}">Cancelar</a>
+    <a class="btn btn-secondary" href="{% url 'listar_atleta' %}">Cancelar</a>
   </form>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ocultar campos no relevantes para edición
+        const passwordFields = document.querySelectorAll('.form-group:has(#id_password1), .form-group:has(#id_password2)');
+        passwordFields.forEach(field => field.style.display = 'none');
+        
+        // Manejar la visibilidad de plan y nivel
+        const tipoUsuarioField = document.querySelector('#id_tipo_usuario');
+        const planField = document.querySelector('#id_plan').closest('.form-group');
+        const nivelField = document.querySelector('#id_nivel').closest('.form-group');
+
+        function toggleFields() {
+            if (tipoUsuarioField.value === 'atleta') {
+                planField.style.display = '';
+                nivelField.style.display = '';
+            } else {
+                planField.style.display = 'none';
+                nivelField.style.display = 'none';
+            }
+        }
+
+        tipoUsuarioField.addEventListener('change', toggleFields);
+        toggleFields();  // Ejecutar al cargar la página
+    });
+</script>
 {% endblock %}

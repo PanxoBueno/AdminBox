@@ -30,7 +30,11 @@
                             <td>{{ item.clase.nombre }}</td>
                             <td>{{ item.clase.get_horario_display }}</td>
                             <td>{{ item.clase.fecha|date:"d/m/Y" }}</td>
-                            <td>{{ item.clase.entrenador|default:"Sin asignar" }}</td>
+                            <td>{% if item.clase.entrenador %}
+                                {{ item.clase.entrenador.usuario.first_name }} {{ item.clase.entrenador.usuario.last_name }}
+                            {% else %}
+                                Sin asignar
+                            {% endif %}</td>
                             <td>
                                 {{ item.cantidad_reservas }} / {{ item.clase.capacidad_maxima }}
                                 <div class="progress mt-1" style="height: 5px;">

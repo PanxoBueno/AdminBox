@@ -1,52 +1,7 @@
-from django.db import models
-from django.contrib.auth.models import AbstractUser, Group, Permission
+from django import forms
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-class Usuario(AbstractUser):
-    TIPO_USUARIO = (
-        ('admin', 'Administrador'),
-        ('entrenador', 'Entrenador'),
-        ('atleta', 'Atleta'),
-    )
-    
-    tipo_usuario = models.CharField(max_length=10, choices=TIPO_USUARIO, default='atleta')
-    telefono = models.CharField(max_length=15, blank=True, null=True)
-    
-    # Relaciones opcionales con los modelos existentes
-    atleta_profile = models.OneToOneField(
-        'Atleta', 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True,
-        related_name='usuario'
-    )
-    entrenador_profile = models.OneToOneField(
-        'Entrenador', 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True,
-        related_name='usuario'
-    )
-    
-    groups = models.ManyToManyField(
-        Group,
-        verbose_name='groups',
-        blank=True,
-        help_text='The groups this user belongs to.',
-        related_name="gymapp_users",
-        related_query_name="gymapp_user",
-    )
-    user_permissions = models.ManyToManyField(
-        Permission,
-        verbose_name='user permissions',
-        blank=True,
-        help_text='Specific permissions for this user.',
-        related_name="gymapp_users",
-        related_query_name="gymapp_user",
-    )
-    
-    def __str__(self):
-        return f"{self.username} ({self.get_tipo_usuario_display()})"
 
 class Categoria(models.Model):
     Categoria_esp =(
@@ -70,23 +25,88 @@ class Categoria(models.Model):
         ('elite', 'Elite'),
     )
 
+class Usuario(AbstractUser):
+    TIPO_USUARIO_CHOICES = [
+        ('atleta', 'Atleta'),
+        ('entrenador', 'Entrenador'),
+    ]
+    PLAN_CHOICES = [
+        ('1', '8 Clases'),
+        ('2', '12 Clases'),
+        ('3', '16 Clases'),
+        ('4', 'Open Box'),
+        ('5', 'Full Clases'),
+        ('6', 'Staff'),
+    ]
+    NIVEL_CHOICES = [
+            ('amateur', 'Amateur'),
+            ('rookie', 'Rookie'),
+            ('scaled', 'Scaled'),
+            ('rx', 'Rx'),
+            ('elite', 'Elite')
+        ]
+    tipo_usuario = models.CharField(
+        max_length=20,
+        choices=TIPO_USUARIO_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Tipo de Usuario"
+    )
+    plan = models.CharField(
+        max_length=20,
+        choices=PLAN_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Plan"
+    )
+    nivel = models.CharField(
+        max_length=20,
+        choices=NIVEL_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Nivel"
+    )
+    ESPECIALIDAD_CHOICES = [
+        ('crossfit', 'CrossFit'),
+        ('halterofilia', 'Halterofilia'),
+        ('metcon', 'Metcon'),
+    ]
+    especialidad = models.CharField(
+        max_length=20,
+        choices=ESPECIALIDAD_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Especialidad"  
+    )
+
+    def __str__(self):
+        return f"{self.username} ({self.tipo_usuario})"
+
 class Atleta(models.Model):
-    nombre = models.CharField(max_length=50)
-    apellido = models.CharField(max_length=50)
-    nivel = models.CharField(max_length=20, choices=Categoria.Nivel)
-    email = models.EmailField(max_length=100)
-    plan = models.IntegerField(choices=Categoria.Planes)
+    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='perfil_atleta')
+    nivel = models.CharField(max_length=20, choices=Categoria.Nivel, verbose_name="Nivel")
 
     def __str__(self):
-        return f"{self.nombre} {self.apellido} "
+        return f"{self.usuario.username} - {self.get_nivel_display()}"
 
+class AtletaUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Usuario
+        fields = ['first_name', 'last_name', 'email', 'tipo_usuario', 'plan','nivel']  # Excluir username y contraseñas
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apellido'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
+            'tipo_usuario': forms.Select(attrs={'class': 'form-select'}),
+            'plan': forms.Select(attrs={'class': 'form-select'}),
+            'nivel': forms.Select(attrs={'class': 'form-select'}),
+        }
 class Entrenador(models.Model):
-    nombre = models.CharField(max_length=50)
-    apellido = models.CharField(max_length=20)
-    especialidad = models.CharField(max_length=20, choices=Categoria.Categoria_esp)
+    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='perfil_entrenador')
+    especialidad = models.CharField(max_length=20, choices=Categoria.Categoria_esp, verbose_name="Especialidad")
 
     def __str__(self):
-        return self.nombre
+        return f"{self.usuario.username} - {self.get_especialidad_display()}"
 
 class Biblioteca(models.Model):
     nombre = models.CharField(max_length=30)
@@ -114,7 +134,8 @@ class Clase(models.Model):
     capacidad_maxima = models.PositiveIntegerField(default=15)
     
     def __str__(self):
-        return f"{self.nombre} - {self.get_horario_display()} - {self.fecha}"
+        entrenador_nombre = f"{self.entrenador.usuario.first_name} {self.entrenador.usuario.last_name}" if self.entrenador else "Sin asignar"
+        return f"{self.nombre} - {self.get_horario_display()} - {self.fecha} - {entrenador_nombre}"
 
 class Reserva(models.Model):
     atleta = models.ForeignKey(Atleta, on_delete=models.CASCADE)
@@ -125,7 +146,7 @@ class Reserva(models.Model):
         unique_together = ('atleta', 'clase')  # Evita reservas duplicadas
     
     def __str__(self):
-        return f"{self.atleta} - {self.clase}"
+                return f"{self.atleta.usuario.first_name} {self.atleta.usuario.last_name} - {self.clase.nombre}"
     
 class MarcaPersonal(models.Model):
     atleta = models.ForeignKey(Atleta, on_delete=models.CASCADE, related_name='marcas_personales')
@@ -188,6 +209,9 @@ class RankingWOD(models.Model):
     @property
     def tiempo_formateado(self):
         return f"{self.tiempo_minutos}:{self.tiempo_segundos:02d}"
+    @property
+    def nombre_completo_atleta(self):
+        return f"{self.atleta.usuario.first_name} {self.atleta.usuario.last_name}"
     
     def __str__(self):
-        return f"{self.atleta} - {self.tiempo_formateado} - {self.clase.nombre}"
+        return f"{self.nombre_completo_atleta} - {self.tiempo_formateado} - {self.clase.nombre}"

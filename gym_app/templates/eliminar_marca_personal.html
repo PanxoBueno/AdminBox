@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Marca Personal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-danger">
+            <i class="bi bi-exclamation-triangle"></i> Eliminar Marca
+        </h1>
+    </div>
+
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">Confirmar Eliminación</h5>
+        </div>
+        <div class="card-body">
+            <p>¿Estás seguro que deseas eliminar esta marca?</p>
+            <div class="mb-3">
+                <strong>Ejercicio:</strong> {{ marca.get_nombre_ejercicio }}<br>
+                <strong>Peso:</strong> {{ marca.peso_lb }} LB<br>
+                <strong>Fecha:</strong> {{ marca.fecha|date:"d/m/Y" }}
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex justify-content-end">
+                    <a href="{% url 'ver_marcas_personales' marca.atleta.usuario.pk %}" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Confirmar Eliminación
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

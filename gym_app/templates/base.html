@@ -112,7 +112,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'menu' %}">
+            <a class="navbar-brand" href="#">
                 <i class="bi bi-activity"></i> AdminBox
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -120,8 +120,9 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'menu' %}">Inicio</a>
+                   {% if user.is_authenticated %}
+                   <li class="nav-item">
+                    <a class="nav-link" href="{% url 'menu' %}">Inicio</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'biblioteca' %}">Ejercicios</a>
@@ -135,10 +136,17 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'listar_clases' %}">Clases</a>
                     </li>
-                    <li class="nav-item">
 
-                        <a class="nav-link" href="{% url 'listar_clases' %}" >Gestionar Rutinas</a>
+                    <li class="nav-item">
+                        <form method="post" action="{% url 'logout' %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm nav-link" style="border: none; background: none; color: var(--light-color);">
+                                Cerrar sesión
+                            </button>
+                        </form>
                     </li>
+                    {% endif %}
+                                     
                     
                 </ul>
             </div>

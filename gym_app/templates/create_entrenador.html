@@ -10,34 +10,100 @@
         <div class="card-body">
             {% if messages %}
                 {% for message in messages %}
-                <div class="alert alert-success alert-dismissible fade show">
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
                     {{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
                 {% endfor %}
             {% endif %}
 
-            <form method="POST" class="needs-validation" novalidate>
+            <form method="POST" action="{% url 'registro_view' %}" class="needs-validation" novalidate>
                 {% csrf_token %}
-                <div class="row g-3">
-                    {% for field in form %}
-                    <div class="col-md-6 mb-3">
-                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.errors %}
+                <input type="hidden" name="tipo_usuario" value="entrenador">
+                <input type="hidden" name="plan" value="6">
+                
+                <!-- Campos básicos -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="id_first_name" class="form-label">Nombre</label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
                             <div class="invalid-feedback">
-                                {{ field.errors|first }}
+                                {{ form.first_name.errors|first }}
                             </div>
                         {% endif %}
                     </div>
-                    {% endfor %}
+                    <div class="col-md-6">
+                        <label for="id_last_name" class="form-label">Apellido</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.last_name.errors|first }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="id_username" class="form-label">Nombre de usuario</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.username.errors|first }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_email" class="form-label">Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.email.errors|first }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="id_password1" class="form-label">Contraseña</label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.password1.errors|first }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_password2" class="form-label">Confirmar contraseña</label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.password2.errors|first }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Campo específico de entrenador -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="id_especialidad" class="form-label">Especialidad</label>
+                        {{ form.especialidad }}
+                        {% if form.especialidad.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.especialidad.errors|first }}
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
 
                 <div class="mt-4">
                     <button type="submit" class="btn btn-danger me-2">
                         <i class="bi bi-save"></i> Guardar Entrenador
                     </button>
-                    <a href="{% url 'menu' %}" class="btn btn-outline-secondary">
+                    <a href="{% url 'listar_entrenadores' %}" class="btn btn-outline-secondary">
                         <i class="bi bi-x-circle"></i> Cancelar
                     </a>
                 </div>
@@ -45,4 +111,25 @@
         </div>
     </div>
 </div>
+
+<script>
+// Validación del formulario en el cliente
+(function () {
+    'use strict'
+    
+    var forms = document.querySelectorAll('.needs-validation')
+    
+    Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                
+                form.classList.add('was-validated')
+            }, false)
+        })
+})()
+</script>
 {% endblock %}

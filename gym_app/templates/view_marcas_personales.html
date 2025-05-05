@@ -1,19 +1,30 @@
 {% extends 'base.html' %}
 
-{% block title %}Marcas Personales - {{ atleta.nombre }} {{ atleta.apellido }}{% endblock %}
+{% block title %}Marcas Personales - {{ atleta.get_full_name }}{% endblock %}
 
 {% block content %}
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="text-danger">
-            <i class="bi bi-trophy-fill"></i> Marcas de {{ atleta.nombre }} {{ atleta.apellido }}
+            <i class="bi bi-trophy-fill"></i> Marcas de {{ atleta.get_full_name }}
+            <span class="badge 
+                {% if perfil_atleta.nivel == 'elite' %}bg-danger
+                {% elif perfil_atleta.nivel == 'rx' %}bg-warning text-dark
+                {% elif perfil_atleta.nivel == 'scaled' %}bg-primary
+                {% elif perfil_atleta.nivel == 'rookie' %}bg-info text-dark
+                {% else %}bg-secondary
+                {% endif %} ms-2">
+                {{ perfil_atleta.get_nivel_display }}
+            </span>
         </h1>
-        <a href="{% url 'dashboard_atleta' atleta.id %}" class="btn btn-outline-danger">
-          <i class="bi bi-graph-up"></i> Ver Progreso Gráfico
-      </a>
-        <a href="{% url 'crear_marca_personal' %}?atleta_id={{ atleta.id }}" class="btn btn-danger">
-            <i class="bi bi-plus-circle"></i> Nueva Marca
-        </a>
+        <div>
+            <a href="{% url 'dashboard_atleta' atleta.pk %}" class="btn btn-outline-danger">
+                <i class="bi bi-graph-up"></i> Ver Progreso Gráfico
+            </a>
+            <a href="{% url 'crear_marca_personal' %}?atleta_id={{ atleta.pk }}" class="btn btn-danger ms-2">
+                <i class="bi bi-plus-circle"></i> Nueva Marca
+            </a>
+        </div>
     </div>
 
     <div class="row">
@@ -73,10 +84,10 @@
                                     <td>{{ marca.fecha|date:"d/m/Y" }}</td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
-                                            <a href="#" class="btn btn-outline-primary" title="Editar">
+                                            <a href="{% url 'editar_marca_personal' marca.id %}" class="btn btn-outline-primary" title="Editar">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <a href="#" class="btn btn-outline-danger" title="Eliminar">
+                                            <a href="{% url 'eliminar_marca_personal' marca.id %}" class="btn btn-outline-danger" title="Eliminar">
                                                 <i class="bi bi-trash"></i>
                                             </a>
                                         </div>
@@ -137,8 +148,7 @@
     </div>
 
     <div class="mt-4 text-center">
-        
-        <a href="{% url 'listar_atleta' %}" class="btn btn-outline-secondary ms-2">
+        <a href="{% url 'listar_atleta' %}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Volver a Atletas
         </a>
     </div>

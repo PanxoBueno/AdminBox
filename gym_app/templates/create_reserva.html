@@ -19,21 +19,46 @@
                     {% endfor %}
                 {% endif %}
 
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endif %}
+
                 <form method="post" class="needs-validation" novalidate>
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="id_atleta" class="form-label">Atleta</label>
                         {{ form.atleta }}
-                        <div class="invalid-feedback">
-                            Por favor selecciona un atleta.
-                        </div>
+                        {% if form.atleta.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.atleta.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="invalid-feedback">
+                                Por favor selecciona un atleta.
+                            </div>
+                        {% endif %}
                     </div>
                     <div class="mb-3">
                         <label for="id_clase" class="form-label">Clase</label>
                         {{ form.clase }}
-                        <div class="invalid-feedback">
-                            Por favor selecciona una clase.
-                        </div>
+                        {% if form.clase.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.clase.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="invalid-feedback">
+                                Por favor selecciona una clase.
+                            </div>
+                        {% endif %}
                         <div id="clase-info" class="mt-2">
                             <!-- Aquí se mostrará la información de disponibilidad -->
                         </div>

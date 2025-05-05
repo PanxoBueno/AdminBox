@@ -19,7 +19,7 @@
         <option value="">Seleccionar atleta</option>
         {% for atleta in atletas %}
           <option value="{{ atleta.id }}" {% if request.GET.atleta_id == atleta.id|stringformat:"s" %}selected{% endif %}>
-            {{ atleta.nombre }} {{ atleta.apellido }}
+            {{ atleta.usuario.get_full_name }} ({{ atleta.get_nivel_display }})
           </option>
         {% endfor %}
       </select>
@@ -52,7 +52,7 @@
     
     <div class="mt-4">
       <button class="btn btn-success" type="submit">Guardar</button>
-      <a class="btn btn-secondary" href="{% url 'menu' %}">Cancelar</a>
+      <a class="btn btn-secondary" href="{% if request.GET.atleta_id %}{% url 'ver_marcas_personales' request.GET.atleta_id %}{% else %}{% url 'listar_atleta' %}{% endif %}">Cancelar</a>
     </div>
   </form>
 {% endblock %}

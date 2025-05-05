@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard - {{ atleta.nombre }}{% endblock %}
+{% block title %}Dashboard - {{ atleta.get_full_name }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>
-        <i class="bi bi-graph-up"></i> Progreso de {{ atleta.nombre }} {{ atleta.apellido }}
+        <i class="bi bi-graph-up"></i> Progreso de {{ atleta.get_full_name }}
     </h1>
     <div>
         <a href="{% url 'ver_marcas_personales' atleta.id %}" class="btn btn-outline-primary">

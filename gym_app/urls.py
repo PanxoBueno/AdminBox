@@ -1,12 +1,16 @@
 from django.urls import path
 from . import views
-from django.contrib.auth import views as auth_views
+from django.contrib.auth.views import LoginView, LogoutView
 
 urlpatterns = [
+    path('registro/', views.registro, name='registro_view'),
+    path('login/', LoginView.as_view(template_name='login.html'), name='login'),
+    path('logout/', LogoutView.as_view(template_name='logout.html'), name='logout'),
+    #path('', LoginView.as_view(template_name='login.html'), name='login'),  # Cambiar la raíz al login
     path('', views.menu, name='menu'),
-    path('login/', views.login_view, name='login'),
-    path('logout/', views.logout_view, name='logout'),
-    path('registro/', views.registro_view, name='registro'),
+    #path('login/', views.login_view, name='login'),
+    #path('logout/', views.logout_view, name='logout'),
+    #path('registro/', views.registro_view, name='registro'),
     path('', views.menu, name='menu'),
     path('biblioteca/', views.home, name='biblioteca'),
     path('crear_biblioteca/', views.crear_biblioteca, name='crear_biblioteca'),
@@ -18,7 +22,6 @@ urlpatterns = [
     path('modificar_entrenador/<int:pk>/', views.modificar_entrenador, name='modificar_entrenador'),
     path('listar_entrenadores/', views.listar_entrenadores, name='listar_entrenadores'),
     path('borrar_entrenador/<int:pk>/', views.borrar_entrenador, name='borrar_entrenador'),
-#REservar
     path('crear_clase/', views.crear_clase, name='crear_clase'),
     path('listar_clases/', views.listar_clases, name='listar_clases'),
     path('borrar_clase/<int:pk>/', views.borrar_clase, name='borrar_clase'),
@@ -28,6 +31,8 @@ urlpatterns = [
     path('get_clase_info/<int:clase_id>/', views.get_clase_info, name='get_clase_info'),
     path('crear_marca/', views.crear_marca_personal, name='crear_marca_personal'),
     path('ver_marcas/<int:atleta_id>/', views.ver_marcas_personales, name='ver_marcas_personales'),
+    path('marcas/editar/<int:marca_id>/', views.editar_marca_personal, name='editar_marca_personal'),
+    path('marcas/eliminar/<int:marca_id>/', views.eliminar_marca_personal, name='eliminar_marca_personal'),
     path('dashboard/<int:atleta_id>/', views.dashboard_atleta, name='dashboard_atleta'),
     path('entrenador/<int:entrenador_id>/clases/', views.clases_entrenador, name='clases_entrenador'),
     path('clase/<int:clase_id>/detalle/', views.detalle_clase_entrenador, name='detalle_clase_entrenador'),

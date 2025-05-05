@@ -65,9 +65,9 @@
                             <tbody>
                                 {% for reserva in reservas %}
                                 <tr>
-                                    <td>{{ reserva.atleta.nombre }} {{ reserva.atleta.apellido }}</td>
-                                    <td>{{ reserva.atleta.get_nivel_display }}</td>
-                                    <td>{{ reserva.atleta.get_plan_display }}</td>
+                                    <td> {{ reserva.atleta.usuario.first_name }} {{ reserva.atleta.usuario.last_name }} </td>
+                                    <td>{{ reserva.atleta.usuario.get_nivel_display }}</td>
+                                    <td>{{ reserva.atleta.usuario.get_plan_display }}</td>
                                     <td>
                                         <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar de la clase">
                                             <i class="bi bi-trash"></i>

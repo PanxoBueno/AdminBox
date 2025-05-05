@@ -43,9 +43,9 @@
                                 {{ result.position }}°
                                 {% endif %}
                             </td>
-                            <td>{{ result.ranking.atleta.nombre }} {{ result.ranking.atleta.apellido }}</td>
-                            <td>{{ result.ranking.atleta.get_nivel_display }}</td>
-                            <td>{{ result.ranking.tiempo_formateado }}</td>
+                            <td>{{ result.nombre_completo }}</td>
+                            <td>{{ result.nivel }}</td>
+                            <td>{{ result.tiempo_formateado }}</td>
                         </tr>
                         {% empty %}
                         <tr>
