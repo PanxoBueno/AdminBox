@@ -2,7 +2,6 @@ from django import forms
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-
 class Categoria(models.Model):
     Categoria_esp =(
         ('halterofilia', 'Halterofilia'),
@@ -26,9 +25,11 @@ class Categoria(models.Model):
     )
 
 class Usuario(AbstractUser):
+    
     TIPO_USUARIO_CHOICES = [
         ('atleta', 'Atleta'),
         ('entrenador', 'Entrenador'),
+        ('admin', 'Admin'),
     ]
     PLAN_CHOICES = [
         ('1', '8 Clases'),
@@ -101,6 +102,7 @@ class AtletaUpdateForm(forms.ModelForm):
             'plan': forms.Select(attrs={'class': 'form-select'}),
             'nivel': forms.Select(attrs={'class': 'form-select'}),
         }
+
 class Entrenador(models.Model):
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='perfil_entrenador')
     especialidad = models.CharField(max_length=20, choices=Categoria.Categoria_esp, verbose_name="Especialidad")
@@ -116,7 +118,6 @@ class Biblioteca(models.Model):
     def __str__(self):
         return self.nombre
     
-#aca agrego funcionalidad de reservas
 class Clase(models.Model):
     HORARIOS = [
         ('06:00', '06:00 AM'),
@@ -189,7 +190,6 @@ class Rutina(models.Model):
     def __str__(self):
         return f"{self.get_tipo_display()} - {self.clase.nombre}"
 
-# models.py - Agregar al final del archivo
 class RankingWOD(models.Model):
     clase = models.ForeignKey(Clase, on_delete=models.CASCADE, related_name='rankings')
     atleta = models.ForeignKey(Atleta, on_delete=models.CASCADE)

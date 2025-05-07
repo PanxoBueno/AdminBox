@@ -1,6 +1,5 @@
 from django import forms
-from .models import Usuario, Biblioteca, Clase, Reserva, MarcaPersonal, Rutina, RankingWOD, Atleta, Entrenador
-from django.contrib.auth.models import AbstractUser
+from .models import Usuario, Biblioteca, Clase, Reserva, MarcaPersonal, Rutina, RankingWOD, Atleta
 from django.contrib.auth.forms import UserCreationForm
 
 class UserRegisterForm(UserCreationForm):
@@ -73,89 +72,12 @@ class UserRegisterForm(UserCreationForm):
                 raise forms.ValidationError({'especialidad': 'Debes seleccionar una especialidad si eres entrenador.'})
 
         return cleaned_data
-"""""
-class UserRegisterForm(UserCreationForm):
-    email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}))
-    password1 = forms.CharField(label='Contraseña', widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña'}))
-    password2 = forms.CharField(label='Confirmar contraseña', widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirmar contraseña'}))
-    first_name = forms.CharField(label='Nombre', max_length=30, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre'}))
-    last_name = forms.CharField(label='Apellido', max_length=30, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apellido'}))
-    tipo_usuario = forms.ChoiceField(
-        label='Tipo de usuario',
-        choices=[('', '-----'), ('atleta', 'Atleta'), ('entrenador', 'Entrenador')],
-        widget=forms.Select(attrs={'class': 'form-select'})
-    )
-    plan = forms.ChoiceField(
-        label='Plan',
-        choices=[
-            ('', '-----'),
-            ('1', '8 Clases'),
-            ('2', '12 Clases'),
-            ('3', '16 Clases'),
-            ('4', 'Open Box'),
-            ('5', 'Full Clases'),
-            ('6', 'Staff')
-        ],
-        widget=forms.Select(attrs={'class': 'form-select'}),
-        error_messages={'required': 'Por favor selecciona un plan válido.'}
-    )
-
-    class Meta:
-        model = User
-        fields = ['first_name', 'last_name', 'tipo_usuario', 'email', 'plan', 'username', 'password1', 'password2']
-        widgets = {
-            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apellido'}),
-            'tipo_usuario': forms.Select(attrs={'class': 'form-select'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
-            'plan': forms.Select(attrs={'class': 'form-select'}),
-            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de usuario'}),
-            'password1': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña'}),
-            'password2': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirmar contraseña'}),
-        }
-        help_texts = {k: "" for k in fields}  # Eliminar los textos de ayuda por defecto
-
-    def clean(self):
-        cleaned_data = super().clean()
-        tipo_usuario = cleaned_data.get('tipo_usuario')
-        plan = cleaned_data.get('plan')
-
-        if tipo_usuario == 'atleta':
-            if not plan or plan == '':
-                raise forms.ValidationError({'plan': 'Debes seleccionar un plan si eres atleta.'})
-        elif tipo_usuario == 'entrenador':
-            cleaned_data['plan'] = '6'  # Asignar automáticamente "Staff" al campo plan
-
-        return cleaned_data
-"""
-"""
-class AtletaForm(forms.ModelForm):
-    first_name = forms.CharField(label='Nombre', max_length=30, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre'}))
-    last_name = forms.CharField(label='Apellido', max_length=30, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apellido'}))
-    email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}))
-    plan = forms.ChoiceField(
-        label='Plan',
-        choices=[
-            ('', '-----'),
-            ('1', '8 Clases'),
-            ('2', '12 Clases'),
-            ('3', '16 Clases'),
-            ('4', 'Open Box'),
-            ('5', 'Full Clases'),
-            ('6', 'Staff')
-        ],
-        widget=forms.Select(attrs={'class': 'form-select'})
-    )
-
-    class Meta:
-        model = Atleta
-        fields = ['nivel']  # Solo el campo nivel del modelo Atleta
-        widgets = {
-            'nivel': forms.Select(attrs={'class': 'form-select'}),
-        }
-"""
-
-
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if Usuario.objects.filter(email=email).exists():
+            raise forms.ValidationError("Este correo electrónico ya está registrado.")
+        return email
+    
 class BibliotecaForm(forms.ModelForm):
     class Meta:
         model = Biblioteca
@@ -179,7 +101,7 @@ class BibliotecaForm(forms.ModelForm):
             'descripcion': 'Descripción',
             'imagen': 'Imagen del ejercicio'
         }
-#aca pongo reservas
+
 class ClaseForm(forms.ModelForm):
     class Meta:
         model = Clase
@@ -203,23 +125,42 @@ class ReservaForm(forms.ModelForm):
     atleta = forms.ModelChoiceField(
         queryset=Atleta.objects.select_related('usuario').all(),
         widget=forms.Select(attrs={'class': 'form-select'}),
-        label="Atleta"
+        label="Atleta",
+        required=False  # Hacer el campo opcional para entrenadores
     )
+
     class Meta:
         model = Reserva
-        fields = ['atleta', 'clase']
+        fields = ['clase']
         widgets = {
             'clase': forms.Select(attrs={'class': 'form-select'}),
         }
 
     def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
         super().__init__(*args, **kwargs)
+
         # Personalizar cómo se muestran las opciones del campo atleta
         self.fields['atleta'].label_from_instance = lambda obj: f"{obj.usuario.first_name} {obj.usuario.last_name}"
+
+        # Si el usuario es atleta, establecerlo como opción predeterminada
+        if self.request and hasattr(self.request.user, 'perfil_atleta'):
+            self.fields['atleta'].initial = self.request.user.perfil_atleta
+            self.fields['atleta'].disabled = True
+            self.fields['atleta'].widget = forms.HiddenInput()
+
     def clean(self):
         cleaned_data = super().clean()
         atleta = cleaned_data.get('atleta')
         clase = cleaned_data.get('clase')
+
+        # Si el usuario es atleta, usar su perfil
+        if self.request and hasattr(self.request.user, 'perfil_atleta'):
+            atleta = self.request.user.perfil_atleta
+            cleaned_data['atleta'] = atleta
+
+        if not atleta:
+            raise forms.ValidationError("Debes seleccionar un atleta.")
 
         # Verificar si ya existe una reserva para este atleta y clase
         if Reserva.objects.filter(atleta=atleta, clase=clase).exists():
@@ -227,16 +168,15 @@ class ReservaForm(forms.ModelForm):
 
         return cleaned_data
 
-
 class MarcaPersonalForm(forms.ModelForm):
     class Meta:
         model = MarcaPersonal
-        fields = ['ejercicio_id', 'peso_lb', 'fecha', 'comentarios']  # Añadido 'fecha'
+        fields = ['ejercicio_id', 'peso_lb', 'fecha', 'comentarios']  
         widgets = {
             'ejercicio_id': forms.Select(attrs={'class': 'form-select'}),
             'peso_lb': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'step': '0.01'
+                'class': 'form-control'
+               
             }),
             'fecha': forms.DateInput(attrs={
                 'class': 'form-control',
@@ -253,6 +193,11 @@ class MarcaPersonalForm(forms.ModelForm):
             'peso_lb': 'Peso (LB)',
             'fecha': 'Fecha de la marca'
         }
+    def clean_peso_lb(self):
+        peso_lb = self.cleaned_data.get('peso_lb')
+        if peso_lb is not None and peso_lb < 0:
+            raise forms.ValidationError("El peso no puede ser negativo.")
+        return peso_lb
 
 class RutinaForm(forms.ModelForm):
     class Meta:
@@ -272,9 +217,8 @@ class RutinaForm(forms.ModelForm):
             'orden': 'Orden en la clase (0 para primero)'
         }
 
-# forms.py - Agregar al final del archivo
 class RankingWODForm(forms.ModelForm):
-     class Meta:
+    class Meta:
         model = RankingWOD
         fields = ['atleta', 'tiempo_minutos', 'tiempo_segundos']
         widgets = {
@@ -295,8 +239,13 @@ class RankingWODForm(forms.ModelForm):
             'tiempo_minutos': 'Minutos',
             'tiempo_segundos': 'Segundos'
         }
+    def clean_tiempo_segundos(self):
+        tiempo_segundos = self.cleaned_data.get('tiempo_segundos')
+        if tiempo_segundos < 0 or tiempo_segundos >= 60:
+            raise forms.ValidationError("El campo 'Segundos' debe estar entre 0 y 59.")
+        return tiempo_segundos
 
-     def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Personalizar cómo se muestran las opciones del campo atleta
         self.fields['atleta'].label_from_instance = lambda obj: f"{obj.usuario.first_name} {obj.usuario.last_name}"

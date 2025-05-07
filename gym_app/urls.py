@@ -6,11 +6,6 @@ urlpatterns = [
     path('registro/', views.registro, name='registro_view'),
     path('login/', LoginView.as_view(template_name='login.html'), name='login'),
     path('logout/', LogoutView.as_view(template_name='logout.html'), name='logout'),
-    #path('', LoginView.as_view(template_name='login.html'), name='login'),  # Cambiar la raíz al login
-    path('', views.menu, name='menu'),
-    #path('login/', views.login_view, name='login'),
-    #path('logout/', views.logout_view, name='logout'),
-    #path('registro/', views.registro_view, name='registro'),
     path('', views.menu, name='menu'),
     path('biblioteca/', views.home, name='biblioteca'),
     path('crear_biblioteca/', views.crear_biblioteca, name='crear_biblioteca'),
@@ -42,6 +37,5 @@ urlpatterns = [
     path('clase/<int:clase_id>/registrar-tiempo/', views.registrar_tiempo_wod, name='registrar_tiempo_wod'),
     path('clase/<int:clase_id>/ranking/', views.ver_ranking_wod, name='ver_ranking_wod'),
     path('eliminar-reserva/<int:reserva_id>/', views.eliminar_reserva, name='eliminar_reserva'),
-    
 ]
     

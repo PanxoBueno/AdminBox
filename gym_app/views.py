@@ -10,14 +10,17 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from .decorators import atleta_required, entrenador_required, admin_required, tipo_usuario_required
+from django.core.exceptions import PermissionDenied
 
-
-@login_required
+@admin_required
 def registro(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
+            if not request.user.is_superuser:
+                login(request, user)
             if user.tipo_usuario == 'atleta':
                 # Crear el perfil de Atleta asegurando que el nivel se guarde
                 nivel = form.cleaned_data.get('nivel')
@@ -34,8 +37,9 @@ def registro(request):
                         defaults={'especialidad': especialidad}
                     )
                     messages.success(request, 'Entrenador registrado con éxito!')   
-            login(request, user)
             return redirect('menu')
+            #login(request, user)
+            #return redirect('menu')
     else:
         form = UserRegisterForm()
     return render(request, 'registro.html', {'form': form})
@@ -53,7 +57,7 @@ def menu(request):
     entrenadores = Entrenador.objects.all()
     context = {'atletas': atletas, 'entrenadores': entrenadores}
     return render(request, 'menu.html', context)
-@login_required
+@admin_required
 def crear_atleta(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
@@ -68,7 +72,7 @@ def crear_atleta(request):
     def listar_atleta(request):
         atletas = Atleta.objects.all().order_by('nivel', 'plan')
         return render(request, 'listar_atletas.html', {'atletas': atletas})
-@login_required
+@admin_required
 def modificar_atleta(request, pk):
     usuario = get_object_or_404(Usuario, pk=pk)
     atleta = get_object_or_404(Atleta, usuario=usuario)
@@ -92,7 +96,7 @@ def modificar_atleta(request, pk):
         'form': user_form,
         'atleta': usuario
     })
-
+@admin_required
 def borrar_atleta(request, pk):
     usuario = get_object_or_404(Usuario, pk=pk)
     if request.method == 'POST':
@@ -100,7 +104,7 @@ def borrar_atleta(request, pk):
         messages.success(request, 'Atleta eliminado con éxito.')
         return redirect('listar_atleta')
     return render(request, 'delete_atleta.html', {'atleta': usuario})
-@login_required
+@admin_required
 def crear_entrenador(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
@@ -111,27 +115,41 @@ def crear_entrenador(request):
     else:
         form = UserRegisterForm()
     return render(request, 'create_entrenador.html', {'form': form})
-@login_required
+@admin_required
 def modificar_entrenador(request, pk):
-    usuario = get_object_or_404(Usuario, pk=pk)
-    entrenador = get_object_or_404(Entrenador, usuario=usuario)
-    if request.method == 'POST':
-        user_form = EntrenadorUpdateForm(request.POST, instance=usuario)
-        if user_form.is_valid():
-            user = user_form.save()
-            if user.tipo_usuario == 'entrenador':
-                entrenador.especialidad = user_form.cleaned_data.get('especialidad')
-                entrenador.save()
-            messages.success(request, 'Entrenador actualizado con éxito.')
+    try:
+        usuario = get_object_or_404(Usuario, pk=pk)
+        
+        # Verificar si el usuario tiene perfil de entrenador
+        if not hasattr(usuario, 'perfil_entrenador'):
+            messages.error(request, 'El usuario no tiene perfil de entrenador')
             return redirect('listar_entrenadores')
-    else:
-        initial_data = {
-            'especialidad': entrenador.especialidad
-        }
-        user_form = EntrenadorUpdateForm(instance=usuario, initial=initial_data)
-    
-    return render(request, 'update_entrenador.html', {'form': user_form, 'entrenador': usuario})
-
+            
+        # Verificar que el usuario que edita es el mismo o es admin
+        if request.user != usuario and not request.user.is_superuser:
+            raise PermissionDenied
+            
+        entrenador = usuario.perfil_entrenador
+        
+        if request.method == 'POST':
+            form = EntrenadorUpdateForm(request.POST, instance=usuario)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Entrenador actualizado con éxito.')
+                return redirect('listar_entrenadores')
+        else:
+            initial_data = {'especialidad': entrenador.especialidad}
+            form = EntrenadorUpdateForm(instance=usuario, initial=initial_data)
+        
+        return render(request, 'update_entrenador.html', {
+            'form': form,
+            'entrenador': usuario
+        })
+        
+    except Exception as e:
+        messages.error(request, f'Error al modificar entrenador: {str(e)}')
+        return redirect('listar_entrenadores')
+@admin_required
 def borrar_entrenador(request, pk):
     usuario = get_object_or_404(Usuario, pk=pk)
     if request.method == 'POST':
@@ -140,10 +158,10 @@ def borrar_entrenador(request, pk):
         return redirect('listar_entrenadores')
     return render(request, 'delete_entrenador.html', {'entrenador': usuario})
 
-@login_required
+@tipo_usuario_required('entrenador', 'admin')
 def crear_biblioteca(request):
     if request.method == 'POST':
-        form = BibliotecaForm(request.POST, request.FILES)  # Importante incluir request.FILES
+        form = BibliotecaForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, 'Ejercicio registrado con éxito.')
@@ -153,7 +171,7 @@ def crear_biblioteca(request):
     
     return render(request, 'create_biblioteca.html', {'form': form})
 
-@login_required
+@tipo_usuario_required('entrenador', 'admin')
 def crear_clase(request):
     if request.method == 'POST':
         form = ClaseForm(request.POST)
@@ -164,7 +182,7 @@ def crear_clase(request):
     else:
         form = ClaseForm()
     return render(request, 'create_clase.html', {'form': form})
-@login_required
+@tipo_usuario_required('entrenador', 'admin')
 def borrar_clase(request, pk):
     clase = get_object_or_404(Clase, pk=pk)
     if request.method == 'POST':
@@ -172,7 +190,7 @@ def borrar_clase(request, pk):
         messages.success(request, 'Clase eliminada con éxito.')
         return redirect('listar_clases')
     return render(request, 'delete_clase.html', {'clase': clase})
-@login_required
+@tipo_usuario_required('entrenador', 'admin')
 def modificar_clase(request, pk):
     clase = get_object_or_404(Clase, pk=pk)
     if request.method == 'POST':
@@ -204,25 +222,45 @@ def listar_clases(request):
         'clases': page_obj,  # Mantener compatibilidad con el template existente
     })
 @login_required
+@tipo_usuario_required('atleta','entrenador')
 def crear_reserva(request):
+    #atleta = get_object_or_404(Atleta, usuario=request.user)
+    atleta = None
+    if request.user.tipo_usuario == 'entrenador':
+        es_entrenador = True
+    else:
+        es_entrenador = False
+        if hasattr(request.user, 'perfil_atleta'):
+            atleta = request.user.perfil_atleta
+
     if request.method == 'POST':
-        form = ReservaForm(request.POST)
+        form = ReservaForm(request.POST, request=request)
         if form.is_valid():
-            # Verificar capacidad de la clase
+            reserva = form.save(commit=False)
+            if es_entrenador:
+                atleta = form.cleaned_data.get('atleta')  # Seleccionar el atleta desde el formulario
+            if atleta:
+                reserva.atleta = atleta
+
             clase = form.cleaned_data['clase']
             reservas_count = Reserva.objects.filter(clase=clase).count()
+
             if reservas_count >= clase.capacidad_maxima:
                 form.add_error('clase', 'Esta clase ha alcanzado su capacidad máxima')
             else:
                 try:
-                    form.save()
+                    reserva.save()
                     messages.success(request, 'Clase reservada con éxito.')
-                    return redirect('crear_reserva')
+                    return redirect('listar_clases')
                 except IntegrityError:
                     form.add_error(None, 'Ya existe una reserva para este atleta en esta clase.')
     else:
-        form = ReservaForm()
-    return render(request, 'create_reserva.html', {'form': form})
+        form = ReservaForm(request=request)
+
+    return render(request, 'create_reserva.html', {
+        'form': form,
+        'es_entrenador': es_entrenador
+    })
 @login_required
 def ver_reservas(request):
     # Reservas agrupadas por atleta
@@ -247,7 +285,7 @@ def ver_reservas(request):
         'clases_con_atletas': clases_con_atletas,
     }
     return render(request, 'view_reservas.html', context)
-@login_required
+@tipo_usuario_required('entrenador', 'admin')
 def eliminar_reserva(request, reserva_id):
     reserva = get_object_or_404(Reserva, pk=reserva_id)
     clase_id = reserva.clase.id
@@ -260,28 +298,27 @@ def eliminar_reserva(request, reserva_id):
     return render(request, 'confirmar_eliminar_reserva.html', {'reserva': reserva})
 @login_required
 def crear_marca_personal(request):
+    if not hasattr(request.user, 'perfil_atleta'):
+        messages.error(request, 'Solo los atletas pueden registrar marcas personales.')
+        return redirect('menu')
+    atleta = request.user.perfil_atleta
     if request.method == 'POST':
         form = MarcaPersonalForm(request.POST)
         if form.is_valid():
             marca = form.save(commit=False)
-            atleta_id = request.POST.get('atleta_id')
-            if not atleta_id:
-                messages.error(request, 'Debes seleccionar un atleta.')
-                return redirect('crear_marca_personal')
-            
+            marca.atleta = atleta  # Asignar automáticamente al atleta logueado
             try:
-                marca.atleta = Atleta.objects.get(pk=atleta_id)
                 marca.save()
                 messages.success(request, 'Marca personal registrada con éxito!')
-                return redirect('ver_marcas_personales', atleta_id=atleta_id)
-            except Atleta.DoesNotExist:
-                messages.error(request, 'El atleta seleccionado no existe.')
+                return redirect('ver_marcas_personales', atleta_id=request.user.pk)
+            except Exception as e:
+                messages.error(request, f'Error al guardar la marca: {str(e)}')
     else:
-        form = MarcaPersonalForm(initial={'fecha': timezone.now().date()})  # Fecha actual por defecto
+        form = MarcaPersonalForm(initial={'fecha': timezone.now().date()})
     
     return render(request, 'create_marca_personal.html', {
         'form': form,
-        'atletas': Atleta.objects.select_related('usuario').all()
+        'atleta': atleta 
     })
 @login_required
 def ver_marcas_personales(request, atleta_id):
@@ -311,7 +348,9 @@ def ver_marcas_personales(request, atleta_id):
 @login_required
 def editar_marca_personal(request, marca_id):
     marca = get_object_or_404(MarcaPersonal, pk=marca_id)
-    
+    # Verificar que el usuario es el dueño de la marca o es admin/entrenador
+    if not (request.user == marca.atleta.usuario or request.user.tipo_usuario in ['entrenador', 'admin']):
+        raise PermissionDenied 
     if request.method == 'POST':
         form = MarcaPersonalForm(request.POST, instance=marca)
         if form.is_valid():
@@ -326,10 +365,14 @@ def editar_marca_personal(request, marca_id):
         'marca': marca
     })
 
-@login_required
+@login_required #modificar que solo puedan borrar sus propias marcas
 def eliminar_marca_personal(request, marca_id):
     marca = get_object_or_404(MarcaPersonal, pk=marca_id)
     atleta_id = marca.atleta.usuario.pk
+    
+    # Verificar que el usuario es el dueño de la marca o es admin/entrenador
+    if not (request.user == marca.atleta.usuario or request.user.tipo_usuario in ['entrenador', 'admin']):
+        raise PermissionDenied
     
     if request.method == 'POST':
         marca.delete()
@@ -369,18 +412,16 @@ def dashboard_atleta(request, atleta_id):
     return render(request, 'dashboard_atleta.html', context)
 @login_required
 def listar_atleta(request):
-    query = request.GET.get('q', '')  # Obtiene el parámetro de búsqueda (si existe)
-    # Filtrar usuarios cuyo tipo_usuario sea "atleta"
+    query = request.GET.get('q', '')  
     usuarios_atletas = Usuario.objects.filter(tipo_usuario='atleta').select_related('perfil_atleta')
     if query:
-        # Filtrar por nombre, apellido, nivel o plan (búsqueda flexible)
         usuarios_atletas = usuarios_atletas.filter(
             Q(first_name__icontains=query) |
             Q(last_name__icontains=query) |
-            Q(perfil_atleta__nivel__icontains=query) |  # Filtrar por nivel del atleta
+            Q(perfil_atleta__nivel__icontains=query) | 
             Q(plan__icontains=query)
-        )
-    paginator = Paginator(usuarios_atletas, 10)  # Paginación: 10 usuarios por página
+        ).order_by('first_name', 'last_name')
+    paginator = Paginator(usuarios_atletas, 10)  
     page_number = request.GET.get('page')
     usuarios_atletas = paginator.get_page(page_number)
     
@@ -418,7 +459,7 @@ def detalle_clase_entrenador(request, clase_id):
         'porcentaje_ocupacion': (reservas.count() / clase.capacidad_maxima) * 100,
     }
     return render(request, 'detalle_clase_entrenador.html', context)
-
+@login_required
 def listar_entrenadores(request):
     query = request.GET.get('q', '')
     usuarios_entrenador = Usuario.objects.filter(tipo_usuario='entrenador').select_related('perfil_entrenador')
@@ -448,7 +489,7 @@ def get_clase_info(request, clase_id):
         'disponible': disponible,
         'lleno': reservas_count >= clase.capacidad_maxima
     })
-@login_required
+@tipo_usuario_required('entrenador', 'admin')
 def crear_rutina(request, clase_id):
     clase = get_object_or_404(Clase, pk=clase_id)
     
@@ -477,7 +518,7 @@ def detalle_rutinas(request, clase_id):
         'clase': clase,
         'rutinas': rutinas
     })
-@login_required
+@tipo_usuario_required('entrenador', 'admin')
 def borrar_rutina(request, rutina_id):
     rutina = get_object_or_404(Rutina, pk=rutina_id)
     clase_id = rutina.clase.id
@@ -487,7 +528,7 @@ def borrar_rutina(request, rutina_id):
         return redirect('detalle_rutinas', clase_id=clase_id)
     return render(request, 'borrar_rutina.html', {'rutina': rutina})
 
-@login_required# views.py - Agregar al final del archivo
+@login_required
 def registrar_tiempo_wod(request, clase_id):
     clase = get_object_or_404(Clase, pk=clase_id)
     if request.method == 'POST':
@@ -542,3 +583,6 @@ def ver_ranking_wod(request, clase_id):
         'clase': clase,
         'ranked_results': ranked_results
     })
+
+def custom_permission_denied_view(request, exception):
+    return render(request, '403.html', status=403)
