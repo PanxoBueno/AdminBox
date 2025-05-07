@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1><i class="bi bi-people-fill"></i> Lista de Atletas</h1>
     <div>
-        <a href="{% url 'registro_view' %}" class="btn btn-primary">
+        <a href="{% url 'crear_atleta' %}" class="btn btn-primary">
             <i class="bi bi-plus-circle"></i> Nuevo Atleta
         </a>
     </div>
@@ -66,6 +66,10 @@
                         <td>{{ atleta.email }}</td>
                         <td>
                             <div class="btn-group" role="group">
+                                <a href="{% url 'crear_reserva' %}?atleta_id={{ atleta.pk }}" class="btn btn-outline-primary" 
+                                    title="Reservar clase para este atleta">
+                                    <i class="bi bi-calendar-check"></i>
+                                </a>
                                 <a href="{% url 'modificar_atleta' atleta.pk %}" class="btn btn-sm btn-outline-primary" title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>

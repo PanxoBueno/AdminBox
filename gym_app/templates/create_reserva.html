@@ -10,15 +10,6 @@
                 <h2 class="mb-0"><i class="bi bi-calendar-plus"></i> Reservar Clase</h2>
             </div>
             <div class="card-body">
-                {% if messages %}
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                    {% endfor %}
-                {% endif %}
-
                 {% if form.non_field_errors %}
                     <div class="alert alert-danger alert-dismissible fade show">
                         {% for error in form.non_field_errors %}
@@ -30,6 +21,8 @@
 
                 <form method="post" class="needs-validation" novalidate>
                     {% csrf_token %}
+                    
+                    {% if es_entrenador %}
                     <div class="mb-3">
                         <label for="id_atleta" class="form-label">Atleta</label>
                         {{ form.atleta }}
@@ -39,12 +32,10 @@
                                     {{ error }}
                                 {% endfor %}
                             </div>
-                        {% else %}
-                            <div class="invalid-feedback">
-                                Por favor selecciona un atleta.
-                            </div>
                         {% endif %}
                     </div>
+                    {% endif %}
+
                     <div class="mb-3">
                         <label for="id_clase" class="form-label">Clase</label>
                         {{ form.clase }}
@@ -54,15 +45,12 @@
                                     {{ error }}
                                 {% endfor %}
                             </div>
-                        {% else %}
-                            <div class="invalid-feedback">
-                                Por favor selecciona una clase.
-                            </div>
                         {% endif %}
                         <div id="clase-info" class="mt-2">
                             <!-- Aquí se mostrará la información de disponibilidad -->
                         </div>
                     </div>
+
                     <div class="mt-4">
                         <button type="submit" class="btn btn-danger me-2" id="submit-btn">
                             <i class="bi bi-check-circle"></i> Confirmar Reserva
@@ -108,7 +96,6 @@ document.getElementById('id_clase').addEventListener('change', function() {
         return;
     }
     
-    // Hacer una petición AJAX para obtener los datos de la clase
     fetch(`/get_clase_info/${claseId}/`)
         .then(response => response.json())
         .then(data => {

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="alert alert-danger">
+    <h2>Acceso denegado</h2>
+    <p>No tienes permisos para acceder a esta página.</p>
+    {% if user.is_authenticated %}
+        <p>Tu tipo de usuario ({{ user.tipo_usuario }}) no tiene acceso a este recurso.</p>
+    {% endif %}
+    <a href="{% url 'menu' %}" class="btn btn-primary">Volver al inicio</a>
+</div>
+{% endblock %}

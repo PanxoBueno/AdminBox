@@ -14,15 +14,8 @@
   <form method="POST">
     {% csrf_token %}
     <div class="mb-3">
-      <label for="atleta" class="form-label">Atleta</label>
-      <select name="atleta_id" id="atleta" class="form-select" required>
-        <option value="">Seleccionar atleta</option>
-        {% for atleta in atletas %}
-          <option value="{{ atleta.id }}" {% if request.GET.atleta_id == atleta.id|stringformat:"s" %}selected{% endif %}>
-            {{ atleta.usuario.get_full_name }} ({{ atleta.get_nivel_display }})
-          </option>
-        {% endfor %}
-      </select>
+      <label class="form-label">Atleta</label>
+      <input type="text" class="form-control" value="{{ atleta.usuario.get_full_name }} ({{ atleta.get_nivel_display }})" readonly>
     </div>
     
     <div class="row">
@@ -52,7 +45,7 @@
     
     <div class="mt-4">
       <button class="btn btn-success" type="submit">Guardar</button>
-      <a class="btn btn-secondary" href="{% if request.GET.atleta_id %}{% url 'ver_marcas_personales' request.GET.atleta_id %}{% else %}{% url 'listar_atleta' %}{% endif %}">Cancelar</a>
+      <a class="btn btn-secondary" href="{% url 'ver_marcas_personales' request.user.pk %}">Cancelar</a>
     </div>
   </form>
 {% endblock %}
