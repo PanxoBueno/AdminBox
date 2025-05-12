@@ -113,7 +113,8 @@ class Entrenador(models.Model):
 class Biblioteca(models.Model):
     nombre = models.CharField(max_length=30)
     descripcion = models.TextField(null=True, blank=True)
-    imagen = models.ImageField(upload_to="ejercicios", null=True)
+    #imagen = models.ImageField(upload_to="ejercicios", null=True)
+    video_url = models.URLField(null=True, blank=True, verbose_name="Enlace del Video")  # Campo para el enlace del video
 
     def __str__(self):
         return self.nombre

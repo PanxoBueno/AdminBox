@@ -72,16 +72,12 @@ class UserRegisterForm(UserCreationForm):
                 raise forms.ValidationError({'especialidad': 'Debes seleccionar una especialidad si eres entrenador.'})
 
         return cleaned_data
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if Usuario.objects.filter(email=email).exists():
-            raise forms.ValidationError("Este correo electrónico ya está registrado.")
-        return email
+
     
 class BibliotecaForm(forms.ModelForm):
     class Meta:
         model = Biblioteca
-        fields = ['nombre', 'descripcion', 'imagen']
+        fields = ['nombre', 'descripcion', 'video_url']
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -92,17 +88,20 @@ class BibliotecaForm(forms.ModelForm):
                 'rows': 3,
                 'placeholder': 'Descripción del ejercicio'
             }),
-            'imagen': forms.ClearableFileInput(attrs={
-                'class': 'form-control'
-            })
+            'video_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Enlace del video'}),
         }
         labels = {
             'nombre': 'Nombre',
             'descripcion': 'Descripción',
-            'imagen': 'Imagen del ejercicio'
+            'video_url': 'Imagen del ejercicio'
         }
 
 class ClaseForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Si se pasa una fecha por GET, establecerla como valor inicial
+        if 'initial' in kwargs and 'fecha' in kwargs['initial']:
+            self.fields['fecha'].initial = kwargs['initial']['fecha']
     class Meta:
         model = Clase
         fields = ['nombre', 'horario', 'fecha', 'entrenador', 'capacidad_maxima']

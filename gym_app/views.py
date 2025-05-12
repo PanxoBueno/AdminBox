@@ -10,8 +10,13 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from .decorators import atleta_required, entrenador_required, admin_required, tipo_usuario_required
+from .decorators import admin_required, tipo_usuario_required
 from django.core.exceptions import PermissionDenied
+from django.db import models
+from datetime import datetime, timedelta
+from calendar import monthrange
+from .utils.email import enviar_email_bienvenida
+
 
 @admin_required
 def registro(request):
@@ -28,7 +33,21 @@ def registro(request):
                     usuario=user,
                     defaults={'nivel': nivel}
                 )
-                messages.success(request, 'Atleta registrado con éxito!')
+                #messages.success(request, 'Atleta registrado con éxito!')
+                 # Obtener datos para el email
+                alumno_nombre = f"{user.first_name} {user.last_name}"
+                plan = dict(form.fields['plan'].choices).get(form.cleaned_data['plan'])
+                nivel = dict(form.fields['nivel'].choices).get(form.cleaned_data['nivel'])
+                
+                # Enviar email de bienvenida
+                enviar_email_bienvenida(
+                    alumno_email=user.email,
+                    alumno_nombre=alumno_nombre,
+                    plan=plan,
+                    nivel=nivel
+                )
+                
+                messages.success(request, 'Atleta registrado con éxito! Se ha enviado un email de bienvenida.')
             elif user.tipo_usuario == 'entrenador':
                     # Crear perfil de Entrenador
                     especialidad = form.cleaned_data.get('especialidad')
@@ -173,15 +192,27 @@ def crear_biblioteca(request):
 
 @tipo_usuario_required('entrenador', 'admin')
 def crear_clase(request):
+    initial_data = {}
+    
+    # Si viene fecha por GET, establecerla como inicial
+    fecha_param = request.GET.get('fecha')
+    if fecha_param:
+        try:
+            initial_data['fecha'] = datetime.strptime(fecha_param, '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            pass
+    
     if request.method == 'POST':
         form = ClaseForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, 'Clase registrada con éxito.')
-            return redirect('crear_clase')
+            return redirect('calendario_clases')  # Redirigir al calendario
     else:
-        form = ClaseForm()
+        form = ClaseForm(initial=initial_data)
+    
     return render(request, 'create_clase.html', {'form': form})
+
 @tipo_usuario_required('entrenador', 'admin')
 def borrar_clase(request, pk):
     clase = get_object_or_404(Clase, pk=pk)
@@ -414,6 +445,12 @@ def dashboard_atleta(request, atleta_id):
 def listar_atleta(request):
     query = request.GET.get('q', '')  
     usuarios_atletas = Usuario.objects.filter(tipo_usuario='atleta').select_related('perfil_atleta')
+    
+    # Anotar cada atleta con el conteo de reservas
+    usuarios_atletas = usuarios_atletas.annotate(
+        num_reservas=models.Count('perfil_atleta__reserva')
+    )
+    
     if query:
         usuarios_atletas = usuarios_atletas.filter(
             Q(first_name__icontains=query) |
@@ -421,13 +458,25 @@ def listar_atleta(request):
             Q(perfil_atleta__nivel__icontains=query) | 
             Q(plan__icontains=query)
         ).order_by('first_name', 'last_name')
+    
+    # Calcular estadísticas
+    total_atletas = usuarios_atletas.count()
+    atletas_with_reservas = usuarios_atletas.filter(num_reservas__gt=0).count()
+    atletas_without_reservas = total_atletas - atletas_with_reservas
+    
+    # Ordenar por cantidad de reservas (de menor a mayor)
+    usuarios_atletas = usuarios_atletas.order_by('num_reservas')
+    
     paginator = Paginator(usuarios_atletas, 10)  
     page_number = request.GET.get('page')
     usuarios_atletas = paginator.get_page(page_number)
     
     return render(request, 'listar_atletas.html', {
         'atletas': usuarios_atletas,
-        'query': query
+        'query': query,
+        'total_atletas': total_atletas,
+        'atletas_with_reservas_count': atletas_with_reservas,
+        'atletas_without_reservas_count': atletas_without_reservas
     })
 
 @login_required
@@ -586,3 +635,105 @@ def ver_ranking_wod(request, clase_id):
 
 def custom_permission_denied_view(request, exception):
     return render(request, '403.html', status=403)
+
+@login_required
+@tipo_usuario_required('entrenador', 'admin')
+def calendario_clases(request):
+    # Obtener el mes y año actual o de la solicitud
+    now = timezone.now()
+    year = request.GET.get('year', now.year)
+    month = request.GET.get('month', now.month)
+    
+    try:
+        year = int(year)
+        month = int(month)
+    except (ValueError, TypeError):
+        year = now.year
+        month = now.month
+    
+    # Calcular el primer y último día del mes
+    _, last_day = monthrange(year, month)
+    first_day = datetime(year, month, 1)
+    last_day = datetime(year, month, last_day)
+    
+    # Obtener todas las clases del mes
+    clases = Clase.objects.filter(
+        fecha__gte=first_day,
+        fecha__lte=last_day
+    ).order_by('fecha', 'horario')
+    
+    # Organizar las clases por día
+    clases_por_dia = {}
+    for clase in clases:
+        day = clase.fecha.day
+        if day not in clases_por_dia:
+            clases_por_dia[day] = []
+        clases_por_dia[day].append(clase)
+    
+    # Crear estructura del calendario
+    calendar_data = []
+    
+    # Obtener el primer día de la semana del primer día del mes
+    first_weekday = first_day.weekday()  # 0=Lunes, 6=Domingo
+    
+    # Días del mes anterior (si es necesario para completar la primera semana)
+    prev_month_days = []
+    if first_weekday > 0:  # Si no empieza en lunes
+        prev_month = first_day - timedelta(days=first_weekday)
+        for i in range(first_weekday):
+            prev_month_days.append({
+                'day': (prev_month + timedelta(days=i)).day,
+                'is_current_month': False,
+                'clases': []
+            })
+    
+    # Días del mes actual
+    current_month_days = []
+    for day in range(1, last_day.day + 1):
+        current_month_days.append({
+            'day': day,
+            'is_current_month': True,
+            'clases': clases_por_dia.get(day, [])
+        })
+    
+    # Días del próximo mes (si es necesario para completar la última semana)
+    next_month_days = []
+    last_weekday = last_day.weekday()
+    if last_weekday < 6:  # Si no termina en domingo
+        days_to_add = 6 - last_weekday
+        for i in range(1, days_to_add + 1):
+            next_month_days.append({
+                'day': i,
+                'is_current_month': False,
+                'clases': []
+            })
+    
+    # Combinar todos los días
+    all_days = prev_month_days + current_month_days + next_month_days
+    
+    # Dividir en semanas (7 días por semana)
+    weeks = []
+    for i in range(0, len(all_days), 7):
+        weeks.append(all_days[i:i+7])
+    
+    # Navegación entre meses
+    prev_month = (month - 1) if month > 1 else 12
+    prev_year = year if month > 1 else year - 1
+    next_month = (month + 1) if month < 12 else 1
+    next_year = year if month < 12 else year + 1
+    
+    context = {
+        'weeks': weeks,
+        'month': month,
+        'month_name': first_day.strftime('%B'),
+        'year': year,
+        'prev_month': prev_month,
+        'prev_year': prev_year,
+        'next_month': next_month,
+        'next_year': next_year,
+        'current_month': now.month,
+        'current_year': now.year,
+    }
+    
+    return render(request, 'calendario_clases.html', context)
+

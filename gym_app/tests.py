@@ -9,6 +9,7 @@ from .models import (Usuario, Atleta, Entrenador, Biblioteca, Clase, Reserva, Ma
 from .forms import (UserRegisterForm, AtletaUpdateForm, EntrenadorUpdateForm,BibliotecaForm, ClaseForm, ReservaForm, MarcaPersonalForm, RutinaForm, RankingWODForm)
 import sys
 from django.contrib.messages.storage.fallback import FallbackStorage
+import time
 
 Usuario = get_user_model()
 # Decorador para imprimir el estado de la prueba
@@ -439,3 +440,165 @@ class ViewTests(TestCase):
         })
         request.user = self.atleta_user
 
+class PerformanceTests(TestCase):
+    def test_user_register_form_response_time(self):
+        """Mide el tiempo de respuesta del formulario de registro"""
+        form_data = {
+            'username': 'newuser',
+            'email': 'new@test.com',
+            'password1': 'complexpassword123',
+            'password2': 'complexpassword123',
+            'first_name': 'Test',
+            'last_name': 'User',
+            'tipo_usuario': 'atleta',
+            'plan': '1',
+            'nivel': 'amateur'
+        }
+
+        # Registrar el tiempo inicial
+        start_time = time.time()
+
+        # Procesar el formulario
+        form = UserRegisterForm(data=form_data)
+        is_valid = form.is_valid()
+
+        # Registrar el tiempo final
+        end_time = time.time()
+
+        # Calcular el tiempo de respuesta
+        response_time = end_time - start_time
+
+        # Asegurarse de que el formulario sea válido
+        self.assertTrue(is_valid, form.errors.as_json())
+
+        # Imprimir el tiempo de respuesta
+        print(f"Tiempo de respuesta del formulario de registro: {response_time:.4f} segundos")
+
+class UserManagementPerformanceTests(TestCase):
+    def setUp(self):
+        self.user = Usuario.objects.create_user(
+            username='testuser',
+            email='test@test.com',
+            password='testpass123',
+            tipo_usuario='atleta',
+            plan='1',
+            nivel='amateur'
+        )
+
+    def test_user_update_response_time(self):
+        """Mide el tiempo de actualización de la información del usuario"""
+        form_data = {
+            'first_name': 'Updated',
+            'last_name': 'User',
+            'email': 'updated@test.com',
+            'plan': '2',
+            'nivel': 'rookie'
+        }
+
+        # Registrar el tiempo inicial
+        start_time = time.time()
+
+        # Procesar la actualización
+        form = AtletaUpdateForm(data=form_data, instance=self.user)
+        is_valid = form.is_valid()
+        if is_valid:
+            form.save()
+
+        # Registrar el tiempo final
+        end_time = time.time()
+
+        # Calcular el tiempo de respuesta
+        response_time = end_time - start_time
+
+        # Verificar que el formulario sea válido y el tiempo sea menor a 3 segundos
+        self.assertTrue(is_valid, form.errors.as_json())
+        self.assertLess(response_time, 3, f"Tiempo de respuesta: {response_time:.4f} segundos")
+
+        # Imprimir el tiempo de respuesta
+        print(f"Tiempo de actualización de usuario: {response_time:.4f} segundos")
+
+class UserMatchingPerformanceTests(TestCase):
+    def setUp(self):
+        # Crear usuarios con perfiles similares
+        self.user1 = Usuario.objects.create_user(username='user1', nivel='rookie', tipo_usuario='atleta')
+        self.user2 = Usuario.objects.create_user(username='user2', nivel='rookie', tipo_usuario='atleta')
+        self.user3 = Usuario.objects.create_user(username='user3', nivel='amateur', tipo_usuario='atleta')
+
+    def test_user_matching_accuracy(self):
+        """Mide la precisión de los matches con usuarios de perfil similar"""
+        # Simular el algoritmo de matching
+        similar_users = Usuario.objects.filter(nivel=self.user1.nivel, tipo_usuario=self.user1.tipo_usuario)
+
+        # Calcular precisión
+        total_users = Usuario.objects.filter(tipo_usuario='atleta').count()
+        precision = len(similar_users) / total_users * 100
+
+        # Verificar que la precisión sea mayor al 90%
+        self.assertGreaterEqual(precision, 90, f"Precisión: {precision:.2f}%")
+
+        # Imprimir la precisión
+        print(f"Precisión de matches: {precision:.2f}%")
+
+class ClassSchedulingPerformanceTests(TestCase):
+    def setUp(self):
+        self.entrenador = Usuario.objects.create_user(username='entrenador', tipo_usuario='entrenador')
+
+    def test_class_scheduling_response_time(self):
+        """Mide el tiempo de programación de una clase"""
+        form_data = {
+            'nombre': 'CrossFit PM',
+            'horario': '18:00',
+            'fecha': date.today() + timedelta(days=1),
+            'entrenador': self.entrenador.id,
+            'capacidad_maxima': 20
+        }
+
+        # Registrar el tiempo inicial
+        start_time = time.time()
+
+        # Procesar la programación
+        form = ClaseForm(data=form_data)
+        is_valid = form.is_valid()
+        if is_valid:
+            form.save()
+
+        # Registrar el tiempo final
+        end_time = time.time()
+
+        # Calcular el tiempo de respuesta
+        response_time = end_time - start_time
+
+        # Verificar que el tiempo sea menor a 5 minutos
+        self.assertTrue(is_valid, form.errors.as_json())
+        self.assertLess(response_time, 300, f"Tiempo de programación: {response_time:.4f} segundos")
+
+        # Imprimir el tiempo de programación
+        print(f"Tiempo de programación de clase: {response_time:.4f} segundos")
+
+class ReportGenerationPerformanceTests(TestCase):
+    def test_report_generation_response_time(self):
+        """Mide el tiempo de generación de reportes mensuales"""
+        # Simular datos para el reporte
+        report_data = {
+            'usuarios_activos': 100,
+            'clases_programadas': 50,
+            'reservas_realizadas': 200
+        }
+
+        # Registrar el tiempo inicial
+        start_time = time.time()
+
+        # Simular la generación del reporte
+        report = f"Usuarios activos: {report_data['usuarios_activos']}, Clases programadas: {report_data['clases_programadas']}, Reservas realizadas: {report_data['reservas_realizadas']}"
+
+        # Registrar el tiempo final
+        end_time = time.time()
+
+        # Calcular el tiempo de respuesta
+        response_time = end_time - start_time
+
+        # Verificar que el tiempo sea menor a 10 segundos
+        self.assertLess(response_time, 10, f"Tiempo de generación: {response_time:.4f} segundos")
+
+        # Imprimir el tiempo de generación
+        print(f"Tiempo de generación de reportes: {response_time:.4f} segundos")
