@@ -31,6 +31,7 @@ DEBUG = True
 #LOGIN_REDIRECT_URL = 'menu'
 #LOGOUT_REDIRECT_URL = 'login'
 #sacar x allowed_host = []
+PORT = os.getenv('PORT', '10000')
 ALLOWED_HOSTS = ['adminbox.onrender.com', 'localhost', '127.0.0.1']
 AUTH_USER_MODEL = 'gym_app.Usuario'
 LOGIN_URL = 'login'
