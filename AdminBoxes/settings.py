@@ -30,8 +30,8 @@ DEBUG = True
 #LOGIN_URL = 'login'
 #LOGIN_REDIRECT_URL = 'menu'
 #LOGOUT_REDIRECT_URL = 'login'
-
-ALLOWED_HOSTS = []
+#sacar x allowed_host = []
+ALLOWED_HOSTS = [adminbox.onrender.com]
 AUTH_USER_MODEL = 'gym_app.Usuario'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'menu'
