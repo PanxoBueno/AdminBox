@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Calendario de Clases{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-danger">
+            <i class="bi bi-calendar-month"></i> Calendario de Clases - {{ month_name }} {{ year }}
+        </h1>
+        <div>
+            <a href="{% url 'crear_clase' %}" class="btn btn-danger me-2">
+                <i class="bi bi-plus-circle"></i> Nueva Clase
+            </a>
+            <div class="btn-group">
+                <a href="{% url 'calendario_clases' %}?year={{ prev_year }}&month={{ prev_month }}" 
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+                <a href="{% url 'calendario_clases' %}?year={{ current_year }}&month={{ current_month }}" 
+                   class="btn btn-outline-secondary">
+                    Hoy
+                </a>
+                <a href="{% url 'calendario_clases' %}?year={{ next_year }}&month={{ next_month }}" 
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-danger">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered mb-0">
+                    <thead class="table-danger">
+                        <tr>
+                            <th class="text-center">Lunes</th>
+                            <th class="text-center">Martes</th>
+                            <th class="text-center">Miércoles</th>
+                            <th class="text-center">Jueves</th>
+                            <th class="text-center">Viernes</th>
+                            <th class="text-center">Sábado</th>
+                            <th class="text-center">Domingo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for week in weeks %}
+                        <tr>
+                            {% for day in week %}
+                            <td style="height: 120px; vertical-align: top;" 
+                                class="{% if not day.is_current_month %}text-muted bg-light{% endif %}">
+                                <div class="d-flex justify-content-between">
+                                    <strong>{{ day.day }}</strong>
+                                    {% if day.is_current_month %}
+                                    <a href="{% url 'crear_clase' %}?fecha={{ year }}-{{ month }}-{{ day.day }}" 
+                                       class="btn btn-sm btn-outline-danger py-0 px-1">
+                                        <i class="bi bi-plus"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if day.is_current_month and day.clases %}
+                                <div class="mt-1">
+                                    {% for clase in day.clases %}
+                                    <div class="mb-1 p-1 bg-danger text-white rounded small">
+                                        <div class="d-flex justify-content-between">
+                                            <strong>{{ clase.get_horario_display }}</strong>
+                                            <a href="{% url 'detalle_clase_entrenador' clase.pk %}" 
+                                               class="text-white">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </div>
+                                        <div>{{ clase.nombre }}</div>
+                                        <small>
+                                            {{ clase.entrenador.usuario.first_name }}
+                                        </small>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

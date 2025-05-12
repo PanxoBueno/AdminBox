@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Mensaje de bienvenida</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #dc3545;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>¡Bienvenido a nuestro Gimnasio de CrossFit!</h1>
+    </div>
+    <div class="content">
+        <p>Hola <strong>{{ alumno_nombre }}</strong>,</p>
+        
+        <p>Nos complace informarte que tu registro en nuestro gimnasio de CrossFit ha sido exitoso.</p>
+        
+        <p>Estamos emocionados de tenerte como parte de nuestra comunidad y estamos comprometidos a ayudarte a alcanzar tus metas de fitness.</p>
+        
+        <p>Aquí están los detalles de tu registro:</p>
+        <ul>
+            <li><strong>Plan:</strong> {{ plan }}</li>
+            <li><strong>Nivel:</strong> {{ nivel }}</li>
+        </ul>
+        
+        <p>No dudes en contactarnos si tienes alguna pregunta o necesitas asistencia.</p>
+        
+        <p>¡Nos vemos en el box!</p>
+    </div>
+    <div class="footer">
+        <p>Atentamente,</p>
+        <p><strong>Coach Administrador</strong></p>
+        <p>Gimnasio de CrossFit</p>
+    </div>
+</body>
+</html>

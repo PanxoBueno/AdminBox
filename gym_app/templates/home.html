@@ -16,8 +16,10 @@
     {% for ejercicio in ejercicios %}
     <div class="col-md-4 mb-4">
         <div class="card h-100">
-            {% if ejercicio.imagen %}
-            <img src="{{ ejercicio.imagen.url }}" class="card-img-top exercise-img" alt="{{ ejercicio.nombre }}">
+            {% if ejercicio.video_url %}
+            <div class="ratio ratio-16x9">
+                <iframe class="embed-responsive-item" src="{{ ejercicio.video_url }}" allowfullscreen></iframe>
+            </div>
             {% else %}
             <div class="exercise-img bg-secondary d-flex align-items-center justify-content-center">
                 <i class="bi bi-image text-white display-4"></i>
@@ -27,7 +29,6 @@
                 <h5 class="card-title">{{ ejercicio.nombre }}</h5>
                 <p class="card-text">{{ ejercicio.descripcion|truncatechars:100 }}</p>
             </div>
-
         </div>
     </div>
     {% empty %}

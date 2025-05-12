@@ -137,6 +137,13 @@
                         <a class="nav-link" href="{% url 'listar_clases' %}">Clases</a>
                     </li>
                     {% endif %}
+                    {% if request.user.tipo_usuario in 'entrenador,admin' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'calendario_clases' %}">
+                            <i class="bi bi-calendar-month"></i> Calendario
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
                 <div class="d-flex align-items-center">
                     {% if user.is_authenticated %}

@@ -32,6 +32,40 @@
     </div>
 </div>
 
+<div class="card mb-3">
+    <div class="card-header bg-info text-white">
+        <i class="bi bi-info-circle"></i> Estadísticas de Asistencia
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h3 class="mb-0">{{ atletas.paginator.count }}</h3>
+                        <p class="mb-0 text-muted">Total Atletas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3 class="mb-0">{{ atletas_with_reservas_count }}</h3>
+                        <p class="mb-0">Con reservas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body text-center">
+                        <h3 class="mb-0">{{ atletas_without_reservas_count }}</h3>
+                        <p class="mb-0">Sin reservas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -42,7 +76,8 @@
                         <th>Apellido</th>
                         <th>Nivel</th>
                         <th>Plan</th>
-                        <th>Email</th>
+                        <th>Reservas</th>
+                        <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -63,7 +98,18 @@
                             </span>
                         </td>
                         <td>{{ atleta.get_plan_display }}</td>
-                        <td>{{ atleta.email }}</td>
+                        <td>
+                            <span class="badge {% if atleta.num_reservas > 0 %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                {{ atleta.num_reservas }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if atleta.num_reservas > 0 %}
+                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> Activo</span>
+                            {% else %}
+                                <span class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Sin reservas</span>
+                            {% endif %}
+                        </td>
                         <td>
                             <div class="btn-group" role="group">
                                 <a href="{% url 'crear_reserva' %}?atleta_id={{ atleta.pk }}" class="btn btn-outline-primary" 
@@ -84,7 +130,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center py-4">No hay atletas registrados</td>
+                        <td colspan="7" class="text-center py-4">No hay atletas registrados</td>
                     </tr>
                     {% endfor %}
                 </tbody>
