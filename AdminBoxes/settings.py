@@ -89,12 +89,12 @@ WSGI_APPLICATION = 'AdminBoxes.wsgi.application'
 
 DATABASES = {
     'default': {
-      'ENGINE': 'django.db.backends.mysql',  # Motor de base de datos
-      'NAME': 'gym_app',
-      'USER': 'root',
-      'PASSWORD': 'Agosto1026/*-',
-      'HOST': '127.0.0.1',
-      'PORT': '3306',
+      'ENGINE': 'django.db.backends.postgresql',  # Motor de base de datos
+      'NAME': 'gym_app_4aky',
+      'USER': 'gym_app_4aky_user',
+      'PASSWORD': '2Z6nlYnr2fuCiNDxSWCNJQCVNiDJsj2M',
+      'HOST': 'dpg-d0h58615pdvs7388oojg-a',
+      'PORT': '5432',
   }
 }
 
