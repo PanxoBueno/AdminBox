@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+import dj-database-url
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -90,7 +91,7 @@ WSGI_APPLICATION = 'AdminBoxes.wsgi.application'
 
 DATABASES = {
     'default': {
-      'ENGINE': 'django.db.backends.postgresql',  # Motor de base de datos
+      'ENGINE': 'dj_database_url.parse(os.environ.get('DATABASE_URL')',  # Motor de base de datos
       'NAME': 'gym_app_4aky',
       'USER': 'gym_app_4aky_user',
       'PASSWORD': '2Z6nlYnr2fuCiNDxSWCNJQCVNiDJsj2M',
