@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mi Perfil{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Mi Perfil</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Información del usuario -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 text-center">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" 
+                                 alt="Avatar" class="rounded-circle img-fluid" width="100">
+                        </div>
+                        <div class="col-md-9">
+                            <h4>{{ user.get_full_name }}</h4>
+                            <p class="mb-1">
+                                <strong>Usuario:</strong> {{ user.username }}
+                            </p>
+                            <p class="mb-1">
+                                <strong>Email:</strong> {{ user.email }}
+                            </p>
+                            <p class="mb-1">
+                                <strong>Rol:</strong> 
+                                <span class="badge bg-{% if user.tipo_usuario == 'admin' %}danger{% elif user.tipo_usuario == 'entrenador' %}warning{% else %}primary{% endif %}">
+                                    {{ user.get_tipo_usuario_display }}
+                                </span>
+                            </p>
+                            {% if atleta %}
+                            <p class="mb-1">
+                                <strong>Nivel:</strong> {{ atleta.get_nivel_display }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Pestañas -->
+                    <ul class="nav nav-tabs" id="profileTabs" role="tablist" >
+                        <li class="nav-item" role="presentation" >
+                            <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#profile" type="button" role="tab" style="background-color: #2c3e50;">
+                                Información Personal
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="password-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#password" type="button" role="tab" style="background-color: #2c3e50;">
+                                Cambiar Contraseña
+                            </button>
+                        </li>
+                        {% if atleta %}
+                        <li class="nav-item" role="presentation" >
+                            <button class="nav-link" id="atleta-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#atleta" type="button" role="tab" style="background-color: #2c3e50;">
+                                Datos de Atleta
+                            </button>
+                        </li>
+                        {% endif %}
+                    </ul>
+                    
+                    <!-- Contenido de las pestañas -->
+                    <div class="tab-content p-3 border border-top-0 rounded-bottom" id="profileTabsContent">
+                        <!-- Información Personal -->
+                        <div class="tab-pane fade show active" id="profile" role="tabpanel">
+                            <form method="post" action="{% url 'mi_perfil' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="update_profile" value="1">
+                                
+                                <div class="mb-3">
+                                    <label for="id_username" class="form-label">Nombre de usuario</label>
+                                    {{ perfil_form.username }}
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_first_name" class="form-label">Nombre</label>
+                                        {{ perfil_form.first_name }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_last_name" class="form-label">Apellido</label>
+                                        {{ perfil_form.last_name }}
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="id_email" class="form-label">Email</label>
+                                    {{ perfil_form.email }}
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">Actualizar Información</button>
+                            </form>
+                        </div>
+                        
+                        <!-- Cambiar Contraseña -->
+                        <div class="tab-pane fade" id="password" role="tabpanel">
+                            <form method="post" action="{% url 'mi_perfil' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="change_password" value="1">
+                                
+                                <div class="mb-3">
+                                    <label for="id_old_password" class="form-label">Contraseña actual</label>
+                                    {{ password_form.old_password }}
+                                    {% if password_form.old_password.errors %}
+                                        <div class="text-danger">{{ password_form.old_password.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="id_new_password1" class="form-label">Nueva contraseña</label>
+                                    {{ password_form.new_password1 }}
+                                    <small class="form-text text-muted">
+                                        {{ password_form.new_password1.help_text }}
+                                    </small>
+                                    {% if password_form.new_password1.errors %}
+                                        <div class="text-danger">{{ password_form.new_password1.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="id_new_password2" class="form-label">Confirmar nueva contraseña</label>
+                                    {{ password_form.new_password2 }}
+                                    {% if password_form.new_password2.errors %}
+                                        <div class="text-danger">{{ password_form.new_password2.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
+                            </form>
+                        </div>
+                        
+                        <!-- Datos de Atleta (solo para atletas) -->
+                        {% if atleta %}
+                        <div class="tab-pane fade" id="atleta" role="tabpanel">
+                            <form method="post" action="{% url 'mi_perfil' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="update_atleta_data" value="1">
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_peso_kg" class="form-label">Peso (kg)</label>
+                                        {{ atleta_form.peso_kg }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_estatura_cm" class="form-label">Estatura (cm)</label>
+                                        {{ atleta_form.estatura_cm }}
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="id_fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
+                                    {{ atleta_form.fecha_nacimiento }}
+                                </div>
+                                
+                                {% if atleta.peso_kg and atleta.estatura_cm %}
+                                <div class="alert alert-info">
+                                    <strong>IMC:</strong> {{ atleta.imc }}
+                                </div>
+                                {% endif %}
+                                
+                                <button type="submit" class="btn btn-primary">Actualizar Datos</button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Activar pestañas cuando se recarga la página con errores en un formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            if (form.querySelector('.is-invalid')) {
+                const tabId = form.closest('.tab-pane').id;
+                const tabButton = document.querySelector(`[data-bs-target="#${tabId}"]`);
+                if (tabButton) {
+                    const tab = new bootstrap.Tab(tabButton);
+                    tab.show();
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

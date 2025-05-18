@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Plan - {{ atleta.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-pencil-square"></i> Editar Plan
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>Atleta: {{ atleta.get_full_name }}</h5>
+                        <p class="mb-1"><strong>ID:</strong> #{{ atleta.id }}</p>
+                        <p class="mb-1"><strong>Email:</strong> {{ atleta.email }}</p>
+                        <p class="mb-1"><strong>Nivel:</strong> {{ atleta.perfil_atleta.get_nivel_display }}</p>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.plan.id_for_label }}" class="form-label">Plan</label>
+                            {{ form.plan }}
+                            {% if form.plan.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.plan.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.fecha_contratacion.id_for_label }}" class="form-label">Fecha de Contratación</label>
+                                {{ form.fecha_contratacion }}
+                                {% if form.fecha_contratacion.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.fecha_contratacion.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.fecha_caducidad.id_for_label }}" class="form-label">Fecha de Caducidad</label>
+                                {{ form.fecha_caducidad }}
+                                {% if form.fecha_caducidad.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.fecha_caducidad.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'detalle_atleta_plan' atleta.id %}" class="btn btn-secondary me-md-2">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

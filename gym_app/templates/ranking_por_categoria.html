@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Ranking por Categorías{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-danger">
+            <i class="bi bi-trophy-fill"></i> Ranking por Categorías
+        </h1>
+        <div>
+            <a href="{% url 'menu' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-danger mb-4">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="bi bi-info-circle"></i> Instrucciones</h5>
+        </div>
+        <div class="card-body">
+            <p>Selecciona una categoría para ver los rankings de los atletas en esa categoría. Los tiempos están ordenados de menor a mayor (los mejores tiempos aparecen primero).</p>
+            <p>Puedes comparar tu desempeño con otros atletas de tu mismo nivel.</p>
+        </div>
+    </div>
+    <div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="wod_id" class="form-label">Filtrar por WOD</label>
+                <select name="wod_id" id="wod_id" class="form-select">
+                    <option value="">Todos los WODs</option>
+                    {% for wod in wods %}
+                    <option value="{{ wod.id }}" {% if filtro_wod == wod.id %}selected{% endif %}>
+                        {{ wod.nombre }} - {{ wod.fecha|date:"d/m/Y" }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="fecha_inicio" class="form-label">Fecha inicio</label>
+                <input type="date" name="fecha_inicio" id="fecha_inicio" 
+                       class="form-control" value="{{ fecha_inicio }}">
+            </div>
+            <div class="col-md-4">
+                <label for="fecha_fin" class="form-label">Fecha fin</label>
+                <input type="date" name="fecha_fin" id="fecha_fin" 
+                       class="form-control" value="{{ fecha_fin }}">
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-filter"></i> Aplicar Filtros
+                </button>
+                <a href="{% url 'ranking_por_categoria' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+    <div class="row">
+        {% for nivel, data in rankings_por_nivel.items %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 border-{% if nivel == 'elite' %}dark{% elif nivel == 'rx' %}primary{% elif nivel == 'scaled' %}warning{% elif nivel == 'rookie' %}info{% else %}secondary{% endif %}">
+                <div class="card-header bg-{% if nivel == 'elite' %}dark{% elif nivel == 'rx' %}primary{% elif nivel == 'scaled' %}warning{% elif nivel == 'rookie' %}info{% else %}secondary{% endif %} text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people-fill"></i> {{ data.nombre_display }}
+                        <span class="badge bg-light text-dark float-end">{{ data.rankings|length }} atletas</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Pos</th>
+                                    <th>Atleta</th>
+                                    <th>Clase</th>
+                                    <th>Tiempo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ranking in data.rankings %}
+                                <tr>
+                                    <td>
+                                        {% if forloop.counter == 1 %}
+                                        <span class="badge bg-warning text-dark">1°</span>
+                                        {% elif forloop.counter == 2 %}
+                                        <span class="badge bg-secondary">2°</span>
+                                        {% elif forloop.counter == 3 %}
+                                        <span class="badge bg-danger">3°</span>
+                                        {% else %}
+                                        {{ forloop.counter }}°
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ ranking.atleta.usuario.first_name }} {{ ranking.atleta.usuario.last_name }}</td>
+                                    <td>{{ ranking.clase.nombre }}</td>
+                                    <td>{{ ranking.tiempo_formateado }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-3">
+                                        <i class="bi bi-info-circle"></i> No hay rankings registrados
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">Última actualización: {{ data.ultima_actualizacion|date:"d/m/Y H:i" }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

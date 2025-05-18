@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle de Plan - {{ atleta.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Detalle de Plan</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-3 text-center">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" 
+                                 alt="Avatar" class="rounded-circle img-fluid" width="100">
+                        </div>
+                        <div class="col-md-9">
+                            <h4>{{ atleta.get_full_name }}</h4>
+                            <p class="mb-1">
+                                <strong>ID:</strong> #{{ atleta.id }}
+                            </p>
+                            <p class="mb-1">
+                                <strong>Email:</strong> {{ atleta.email }}
+                            </p>
+                            <p class="mb-1">
+                                <strong>Nivel:</strong> 
+                                <span class="badge bg-primary">
+                                    {{ perfil_atleta.get_nivel_display }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h4 class="mb-0">Información del Plan</h4>
+                        </div>
+                        <div class="card-body">
+                            {% if atleta.plan %}
+                            <div class="alert alert-{% if atleta.tiene_plan_activo %}success{% else %}warning{% endif %}">
+                                <h5 class="alert-heading">
+                                    {{ atleta.get_plan_display }}
+                                    <span class="badge bg-{% if atleta.tiene_plan_activo %}success{% else %}danger{% endif %} float-end">
+                                        {% if atleta.tiene_plan_activo %}ACTIVO{% else %}CADUCADO{% endif %}
+                                    </span>
+                                </h5>
+                                
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <p><strong>Fecha de Contratación:</strong><br>
+                                        {{ atleta.fecha_contratacion|date:"d/m/Y" }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Fecha de Caducidad:</strong><br>
+                                        {{ atleta.fecha_caducidad|date:"d/m/Y" }}</p>
+                                    </div>
+                                </div>
+                                
+                                {% if atleta.tiene_plan_activo %}
+                                <div class="progress mt-3">
+                                    <div class="progress-bar progress-bar-striped bg-success" 
+                                         role="progressbar" 
+                                         style="width: {{ atleta.dias_restantes_plan }}%" 
+                                         aria-valuenow="{{ atleta.dias_restantes_plan }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="30">
+                                        {{ atleta.dias_restantes_plan }} días restantes
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <div class="alert alert-danger">
+                                <h5 class="alert-heading">Sin plan activo</h5>
+                                <p>Este atleta no tiene un plan contratado actualmente.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'atletas_por_categoria' %}" class="btn btn-secondary me-md-2">
+                            <i class="bi bi-arrow-left"></i> Volver
+                        </a>
+                        {% if request.user.tipo_usuario == 'admin' %}
+                        <a href="{% url 'editar_plan_atleta' atleta.id %}"class="btn btn-primary">
+                            <i class="bi bi-pencil"></i> Editar Plan
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

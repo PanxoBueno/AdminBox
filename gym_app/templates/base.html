@@ -17,7 +17,7 @@
         
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #f8f9fa;
+            background-color: #f0f8ff;
         }
         
         .navbar {
@@ -127,23 +127,33 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'biblioteca' %}">Ejercicios</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'listar_atleta' %}">Atletas</a>
+                   <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Atletas
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="{% url 'listar_atleta' %}">Lista de Atletas</a></li>
+                            <li><a class="dropdown-item" href="{% url 'atletas_por_categoria' %}">Por Categoría</a></li>
+                            <li><a class="dropdown-item" href="{% url 'ranking_por_categoria' %}">Ranking Categoría</a></li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'listar_entrenadores' %}">Entrenadores</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'listar_clases' %}">Clases</a>
-                    </li>
-                    {% endif %}
-                    {% if request.user.tipo_usuario in 'entrenador,admin' %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'calendario_clases' %}">
-                            <i class="bi bi-calendar-month"></i> Calendario
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="clasesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Clases
                         </a>
+                        <ul class="dropdown-menu" aria-labelledby="clasesDropdown">
+                            <li><a class="dropdown-item" href="{% url 'listar_clases' %}">Listado de Clases</a></li>
+                            {% if request.user.tipo_usuario in 'entrenador,admin' %}
+                            <li><a class="dropdown-item" href="{% url 'calendario_clases' %}">Calendario</a></li>
+                            {% endif %}
+                        </ul>
                     </li>
                     {% endif %}
+
+                    
                 </ul>
                 <div class="d-flex align-items-center">
                     {% if user.is_authenticated %}
@@ -159,7 +169,7 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser">
                             <li>
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="{% url 'mi_perfil' %}">
                                     <i class="bi bi-person me-2"></i>Mi Perfil
                                 </a>
                             </li>

@@ -62,7 +62,10 @@
                                 {% if day.is_current_month and day.clases %}
                                 <div class="mt-1">
                                     {% for clase in day.clases %}
-                                    <div class="mb-1 p-1 bg-danger text-white rounded small">
+                                    <div class="mb-1 p-1 {% if clase.nombre|lower == 'crossfit' %}bg-danger text-white
+                                                {% elif clase.nombre|lower == 'halterofilia' %}bg-warning text-dark
+                                                {% else %}bg-secondary text-white
+                                                {% endif %} rounded small">
                                         <div class="d-flex justify-content-between">
                                             <strong>{{ clase.get_horario_display }}</strong>
                                             <a href="{% url 'detalle_clase_entrenador' clase.pk %}" 
