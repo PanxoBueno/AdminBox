@@ -38,5 +38,13 @@ urlpatterns = [
     path('clase/<int:clase_id>/registrar-tiempo/', views.registrar_tiempo_wod, name='registrar_tiempo_wod'),
     path('clase/<int:clase_id>/ranking/', views.ver_ranking_wod, name='ver_ranking_wod'),
     path('eliminar-reserva/<int:reserva_id>/', views.eliminar_reserva, name='eliminar_reserva'),
+    path('atletas/categoria/', views.atletas_por_categoria, name='atletas_por_categoria'),
+    path('atletas/<int:atleta_id>/', views.detalle_atleta, name='detalle_atleta'),
+    path('atletas/<int:atleta_id>/reservas/', views.ver_reservas_atleta, name='ver_reservas_atleta'),
+    path('mi-perfil/', views.mi_perfil, name='mi_perfil'),
+    path('atletas/<int:atleta_id>/plan/', views.detalle_atleta_plan, name='detalle_atleta_plan'),
+    path('atletas/<int:atleta_id>/editar-plan/', views.editar_plan_atleta, name='editar_plan_atleta'),
+    path('ranking-categorias/', views.ranking_por_categoria, name='ranking_por_categoria'),
+
 ]
     

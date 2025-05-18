@@ -1,6 +1,11 @@
 from django import forms
 from .models import Usuario, Biblioteca, Clase, Reserva, MarcaPersonal, Rutina, RankingWOD, Atleta
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+from datetime import timedelta
+
+User = get_user_model()
 
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}))
@@ -73,7 +78,6 @@ class UserRegisterForm(UserCreationForm):
 
         return cleaned_data
 
-    
 class BibliotecaForm(forms.ModelForm):
     class Meta:
         model = Biblioteca
@@ -273,3 +277,53 @@ class EntrenadorUpdateForm(forms.ModelForm):
             'tipo_usuario': forms.Select(attrs={'class': 'form-select'}),
             'especialidad': forms.Select(attrs={'class': 'form-select'}),
         }
+
+class PerfilUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
+
+class AtletaProfileForm(forms.ModelForm):
+    class Meta:
+        model = Atleta
+        fields = ['peso_kg', 'estatura_cm', 'fecha_nacimiento']
+        widgets = {
+            'peso_kg': forms.NumberInput(attrs={'class': 'form-control'}),
+            'estatura_cm': forms.NumberInput(attrs={'class': 'form-control'}),
+            'fecha_nacimiento': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        }
+
+class EditarPlanForm(forms.ModelForm):
+    class Meta:
+        model = Usuario
+        fields = ['plan', 'fecha_contratacion', 'fecha_caducidad']
+        widgets = {
+            'plan': forms.Select(attrs={'class': 'form-select'}),
+            'fecha_contratacion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'fecha_caducidad': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Establecer el formato de fecha para los inputs
+        if self.instance.fecha_contratacion:
+            self.initial['fecha_contratacion'] = self.instance.fecha_contratacion.strftime('%Y-%m-%d')
+        if self.instance.fecha_caducidad:
+            self.initial['fecha_caducidad'] = self.instance.fecha_caducidad.strftime('%Y-%m-%d')
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        fecha_contratacion = cleaned_data.get('fecha_contratacion')
+        fecha_caducidad = cleaned_data.get('fecha_caducidad')
+        
+        if fecha_contratacion and fecha_caducidad:
+            if fecha_caducidad < fecha_contratacion:
+                raise forms.ValidationError("La fecha de caducidad no puede ser anterior a la fecha de contratación")
+        
+        return cleaned_data

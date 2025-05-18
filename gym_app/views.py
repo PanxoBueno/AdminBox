@@ -1,14 +1,15 @@
 from django.db import IntegrityError
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import UserRegisterForm, AtletaUpdateForm, EntrenadorUpdateForm, BibliotecaForm, ClaseForm, ReservaForm, MarcaPersonalForm, RutinaForm, RankingWODForm
+from .forms import UserRegisterForm, AtletaUpdateForm, EntrenadorUpdateForm, BibliotecaForm, ClaseForm, ReservaForm, MarcaPersonalForm, RutinaForm, RankingWODForm, PerfilUpdateForm, AtletaProfileForm, EditarPlanForm
 from .models import Atleta, Entrenador, Biblioteca, Clase, Reserva, MarcaPersonal, Rutina, RankingWOD, Usuario
 from django.contrib import messages
-from django.db.models import Max, Q
+from django.db.models import Max, Q, Count
 import json
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.contrib.auth import login
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.decorators import login_required
 from .decorators import admin_required, tipo_usuario_required
 from django.core.exceptions import PermissionDenied
@@ -16,7 +17,7 @@ from django.db import models
 from datetime import datetime, timedelta
 from calendar import monthrange
 from .utils.email import enviar_email_bienvenida
-
+from django.contrib.auth import update_session_auth_hash
 
 @admin_required
 def registro(request):
@@ -45,8 +46,7 @@ def registro(request):
                     alumno_nombre=alumno_nombre,
                     plan=plan,
                     nivel=nivel
-                )
-                
+                ) 
                 messages.success(request, 'Atleta registrado con éxito! Se ha enviado un email de bienvenida.')
             elif user.tipo_usuario == 'entrenador':
                     # Crear perfil de Entrenador
@@ -737,3 +737,306 @@ def calendario_clases(request):
     
     return render(request, 'calendario_clases.html', context)
 
+@login_required
+@tipo_usuario_required('entrenador', 'admin')
+def atletas_por_categoria(request):
+    # Filtrar SOLO los usuarios que son atletas
+    atletas = Usuario.objects.filter(tipo_usuario='atleta')
+    
+    # Agrupar atletas por nivel con todos los conteos necesarios
+    categorias = atletas.values('perfil_atleta__nivel').annotate(
+        total=Count('id'),
+        activos=Count('id', filter=Q(fecha_caducidad__gte=timezone.now())),
+        no_activos=Count('id', filter=Q(fecha_caducidad__lt=timezone.now()) | Q(fecha_caducidad__isnull=True)),
+        con_reservas=Count('id', filter=Q(perfil_atleta__reserva__isnull=False)),
+        sin_reservas=Count('id', filter=Q(perfil_atleta__reserva__isnull=True))
+    ).order_by('perfil_atleta__nivel')
+    
+    # Procesar los datos para incluir todos los campos necesarios
+    categorias_procesadas = []
+    for cat in categorias:
+        nivel = cat['perfil_atleta__nivel']
+        total = cat['total']
+        activos = cat['activos']
+        no_activos = cat['no_activos']
+        con_reservas = cat['con_reservas']
+        sin_reservas = cat['sin_reservas']
+        
+        # Calcular porcentaje de actividad (con reservas)
+        porcentaje = (con_reservas / total * 100) if total > 0 else 0
+        
+        categorias_procesadas.append({
+            'nivel': nivel,
+            'total': total,
+            'activos': activos,
+            'no_activos': no_activos,
+            'con_reservas': con_reservas,
+            'sin_reservas': sin_reservas,
+            'porcentaje_actividad': round(porcentaje, 2)
+        })
+    
+    # Calcular totales generales SOLO de atletas
+    total_general = {
+        'total': sum(cat['total'] for cat in categorias_procesadas),
+        'activos': sum(cat['activos'] for cat in categorias_procesadas),
+        'no_activos': sum(cat['no_activos'] for cat in categorias_procesadas),
+        'con_reservas': sum(cat['con_reservas'] for cat in categorias_procesadas),
+        'sin_reservas': sum(cat['sin_reservas'] for cat in categorias_procesadas),
+    }
+    
+    # Calcular porcentaje general
+    if total_general['total'] > 0:
+        total_general['porcentaje_actividad'] = round(
+            (total_general['con_reservas'] / total_general['total'] * 100), 2
+        )
+    else:
+        total_general['porcentaje_actividad'] = 0
+    
+    # Obtener todos los atletas con información detallada (ya filtrado por tipo_usuario='atleta')
+    atletas_detallados = atletas.select_related('perfil_atleta').prefetch_related(
+        'perfil_atleta__reserva_set'
+    ).order_by('perfil_atleta__nivel', 'first_name')
+
+    # Preparar datos para el template
+    niveles = {
+        'amateur': {'nombre': 'Amateur', 'atletas': []},
+        'rookie': {'nombre': 'Rookie', 'atletas': []},
+        'scaled': {'nombre': 'Scaled', 'atletas': []},
+        'rx': {'nombre': 'Rx', 'atletas': []},
+        'elite': {'nombre': 'Elite', 'atletas': []}
+    }
+
+    for atleta in atletas_detallados:
+        nivel = atleta.perfil_atleta.nivel
+        niveles[nivel]['atletas'].append({
+            'id': atleta.id,
+            'nombre_completo': f"{atleta.first_name} {atleta.last_name}",
+            'email': atleta.email,
+            'plan': atleta.plan,
+            'get_plan_display': atleta.get_plan_display(),
+            'fecha_contratacion': atleta.fecha_contratacion,
+            'fecha_caducidad': atleta.fecha_caducidad,
+            'tiene_plan_activo': atleta.tiene_plan_activo,
+            'reservas_count': atleta.perfil_atleta.reserva_set.count(),
+            'marcas_count': atleta.perfil_atleta.marcas_personales.count()
+        })
+
+    context = {
+        'categorias': categorias_procesadas,
+        'niveles': niveles,
+        'total_atletas': total_general['total'],  # Usamos el total ya calculado
+        'total_general': total_general
+    }
+    print(f"Total atletas encontrados: {atletas.count()}")
+    return render(request, 'atletas_por_categoria.html', context)
+
+@login_required
+@tipo_usuario_required('entrenador', 'admin')
+def detalle_atleta(request, atleta_id):
+    usuario = get_object_or_404(Usuario, pk=atleta_id, tipo_usuario='atleta')
+    atleta = get_object_or_404(Atleta, usuario=usuario)
+    
+    # Últimas 5 reservas
+    reservas = Reserva.objects.filter(atleta=atleta).select_related(
+        'clase', 'clase__entrenador__usuario'
+    ).order_by('-clase__fecha', '-clase__horario')[:5]
+    
+    # Últimas 5 marcas
+    marcas = MarcaPersonal.objects.filter(atleta=atleta).select_related(
+        'ejercicio_id'
+    ).order_by('-fecha')[:5]
+    
+    # PRs (mejores marcas por ejercicio)
+    prs = MarcaPersonal.objects.filter(
+        atleta=atleta
+    ).values('ejercicio_id__nombre').annotate(
+        max_peso=Max('peso_lb')
+    ).order_by('ejercicio_id__nombre')
+    
+    context = {
+        'atleta': usuario,
+        'perfil_atleta': atleta,
+        'reservas': reservas,
+        'marcas': marcas,
+        'prs': prs,
+        'reservas_count': reservas.count(),
+        'marcas_count': marcas.count()
+    }
+    
+    return render(request, 'detalle_atleta.html', context)
+
+@login_required
+@tipo_usuario_required('entrenador', 'admin')
+def ver_reservas_atleta(request, atleta_id):
+    usuario = get_object_or_404(Usuario, pk=atleta_id, tipo_usuario='atleta')
+    atleta = get_object_or_404(Atleta, usuario=usuario)
+    
+    reservas = Reserva.objects.filter(
+        atleta=atleta
+    ).select_related(
+        'clase', 'clase__entrenador__usuario'
+    ).order_by('-clase__fecha', '-clase__horario')
+    
+    # Agrupar por mes
+    reservas_por_mes = {}
+    for reserva in reservas:
+        mes_key = reserva.clase.fecha.strftime("%Y-%m")
+        mes_nombre = reserva.clase.fecha.strftime("%B %Y")
+        
+        if mes_key not in reservas_por_mes:
+            reservas_por_mes[mes_key] = {
+                'nombre': mes_nombre,
+                'reservas': [],
+                'count': 0
+            }
+        
+        reservas_por_mes[mes_key]['reservas'].append(reserva)
+        reservas_por_mes[mes_key]['count'] += 1
+    
+    context = {
+        'atleta': usuario,
+        'perfil_atleta': atleta,
+        'reservas_por_mes': reservas_por_mes,
+        'total_reservas': reservas.count()
+    }
+    
+    return render(request, 'reservas_atleta.html', context)
+
+@login_required
+def detalle_atleta_plan(request, atleta_id):
+    usuario = get_object_or_404(Usuario, pk=atleta_id, tipo_usuario='atleta')
+    atleta = get_object_or_404(Atleta, usuario=usuario)
+    
+    context = {
+        'atleta': usuario,
+        'perfil_atleta': atleta,
+    }
+    
+    return render(request, 'detalle_atleta_plan.html', context)
+
+@login_required
+def mi_perfil(request):
+    usuario = request.user
+    atleta = None
+    
+    if hasattr(usuario, 'perfil_atleta'):
+        atleta = usuario.perfil_atleta
+    
+    # Formularios
+    perfil_form = PerfilUpdateForm(instance=usuario)
+    password_form = PasswordChangeForm(user=usuario)
+    atleta_form = None
+    
+    if atleta:
+        atleta_form = AtletaProfileForm(instance=atleta)
+    
+    if request.method == 'POST':
+        if 'update_profile' in request.POST:
+            perfil_form = PerfilUpdateForm(request.POST, instance=usuario)
+            if perfil_form.is_valid():
+                perfil_form.save()
+                messages.success(request, 'Perfil actualizado con éxito!')
+                return redirect('mi_perfil')
+        
+        elif 'change_password' in request.POST:
+            password_form = PasswordChangeForm(user=usuario, data=request.POST)
+            if password_form.is_valid():
+                user = password_form.save()
+                update_session_auth_hash(request, user)  # Mantener la sesión activa
+                messages.success(request, 'Contraseña actualizada con éxito!')
+                return redirect('mi_perfil')
+        
+        elif 'update_atleta_data' in request.POST and atleta:
+            atleta_form = AtletaProfileForm(request.POST, instance=atleta)
+            if atleta_form.is_valid():
+                atleta_form.save()
+                messages.success(request, 'Datos de atleta actualizados con éxito!')
+                return redirect('mi_perfil')
+    
+    context = {
+        'perfil_form': perfil_form,
+        'password_form': password_form,
+        'atleta_form': atleta_form,
+        'atleta': atleta,
+    }
+    
+    return render(request, 'mi_perfil.html', context)
+
+@admin_required
+def editar_plan_atleta(request, atleta_id):
+    usuario = get_object_or_404(Usuario, pk=atleta_id, tipo_usuario='atleta')
+    
+    if request.method == 'POST':
+        form = EditarPlanForm(request.POST, instance=usuario)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Plan actualizado correctamente')
+            return redirect('detalle_atleta_plan', atleta_id=atleta_id)
+    else:
+        form = EditarPlanForm(instance=usuario)
+    
+    context = {
+        'form': form,
+        'atleta': usuario,
+    }
+    
+    return render(request, 'editar_plan_atleta.html', context)
+
+@login_required
+def ranking_por_categoria(request):
+    # Obtener parámetros de filtro
+    wod_id = request.GET.get('wod_id')
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    
+    # Preparar filtros
+    filtros = Q()
+    if wod_id:
+        filtros &= Q(clase_id=wod_id)
+    if fecha_inicio:
+        filtros &= Q(clase__fecha__gte=fecha_inicio)
+    if fecha_fin:
+        filtros &= Q(clase__fecha__lte=fecha_fin)
+    
+    # Obtener todos los rankings agrupados por nivel
+    niveles = {
+        'amateur': {'nombre_display': 'Amateur', 'rankings': [], 'estadisticas': {}},
+        'rookie': {'nombre_display': 'Rookie', 'rankings': [], 'estadisticas': {}},
+        'scaled': {'nombre_display': 'Scaled', 'rankings': [], 'estadisticas': {}},
+        'rx': {'nombre_display': 'Rx', 'rankings': [], 'estadisticas': {}},
+        'elite': {'nombre_display': 'Elite', 'rankings': [], 'estadisticas': {}}
+    }
+    
+    # Obtener los últimos 10 rankings por cada nivel, ordenados por tiempo
+    for nivel in niveles.keys():
+        rankings = RankingWOD.objects.filter(
+            filtros,
+            atleta__nivel=nivel
+        ).select_related(
+            'atleta__usuario', 'clase'
+        ).order_by('tiempo_minutos', 'tiempo_segundos')[:10]
+        
+        # Calcular estadísticas básicas
+        tiempos = [r.tiempo_total_segundos for r in rankings]
+        
+        niveles[nivel]['rankings'] = rankings
+        niveles[nivel]['ultima_actualizacion'] = timezone.now()
+        niveles[nivel]['estadisticas'] = {
+            'promedio': sum(tiempos)/len(tiempos) if tiempos else 0,
+            'mejor': min(tiempos) if tiempos else 0,
+            'peor': max(tiempos) if tiempos else 0,
+            'total_atletas': rankings.count()
+        }
+    
+    # Obtener lista de WODs para el filtro
+    wods = Clase.objects.filter(rankings__isnull=False).distinct().order_by('-fecha', 'nombre')
+    
+    context = {
+        'rankings_por_nivel': niveles,
+        'wods': wods,
+        'filtro_wod': int(wod_id) if wod_id else None,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin
+    }
+    
+    return render(request, 'ranking_por_categoria.html', context)

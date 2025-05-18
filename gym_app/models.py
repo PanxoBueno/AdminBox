@@ -1,6 +1,9 @@
 from django import forms
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
+from datetime import timedelta
+
 
 class Categoria(models.Model):
     Categoria_esp =(
@@ -80,15 +83,77 @@ class Usuario(AbstractUser):
         verbose_name="Especialidad"  
     )
 
+    fecha_contratacion = models.DateField(null=True, blank=True, verbose_name="Fecha de Contratación")
+    fecha_caducidad = models.DateField(null=True, blank=True, verbose_name="Fecha de Caducidad")
+      
+    def save(self, *args, **kwargs):
+        # Si cambia el plan y no hay fecha de contratación
+        if self.plan and not self.fecha_contratacion:
+            self.fecha_contratacion = timezone.now().date()
+            
+            # Solo calcular caducidad automática si no está establecida
+            if not self.fecha_caducidad:
+                self.calcular_fecha_caducidad()
+        # Si es un nuevo usuario con plan, establecer fechas
+        if self.pk is None and self.plan and not self.fecha_contratacion:
+            self.fecha_contratacion = timezone.now().date()
+            
+            # Calcular fecha de caducidad según el plan
+            if self.plan == '1':  # 8 Clases (1 mes)
+                self.fecha_caducidad = self.fecha_contratacion + timedelta(days=30)
+            elif self.plan == '2':  # 12 Clases (1 mes)
+                self.fecha_caducidad = self.fecha_contratacion + timedelta(days=30)
+            elif self.plan == '3':  # 16 Clases (1 mes)
+                self.fecha_caducidad = self.fecha_contratacion + timedelta(days=30)
+            elif self.plan == '4':  # Open Box (1 mes)
+                self.fecha_caducidad = self.fecha_contratacion + timedelta(days=30)
+            elif self.plan == '5':  # Full Clases (1 mes)
+                self.fecha_caducidad = self.fecha_contratacion + timedelta(days=30)
+        
+        super().save(*args, **kwargs)
+    
+    @property
+    def tiene_plan_activo(self):
+        if not self.fecha_caducidad:
+            return False
+        return self.fecha_caducidad >= timezone.now().date()
+    
+    @property
+    def dias_restantes_plan(self):
+        if not self.tiene_plan_activo:
+            return 0
+        return (self.fecha_caducidad - timezone.now().date()).days
+    @property
+    def calcular_fecha_caducidad(self):
+        if self.plan and self.fecha_contratacion:
+            if self.plan in ['1', '2', '3', '4', '5']:  # Todos planes mensuales
+                self.fecha_caducidad = self.fecha_contratacion + timedelta(days=30)
+
     def __str__(self):
         return f"{self.username} ({self.tipo_usuario})"
 
 class Atleta(models.Model):
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='perfil_atleta')
     nivel = models.CharField(max_length=20, choices=Categoria.Nivel, verbose_name="Nivel")
+    peso_kg = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name="Peso (kg)")
+    estatura_cm = models.PositiveIntegerField(null=True, blank=True, verbose_name="Estatura (cm)")
+    fecha_nacimiento = models.DateField(null=True, blank=True, verbose_name="Fecha de Nacimiento")
 
     def __str__(self):
         return f"{self.usuario.username} - {self.get_nivel_display()}"
+    
+    @property
+    def imc(self):
+        if self.peso_kg and self.estatura_cm:
+            try:
+                # Convertir todo a float para el cálculo
+                peso = float(self.peso_kg)
+                estatura_m = float(self.estatura_cm) / 100  # Convertir cm a m
+                imc_calculado = peso / (estatura_m ** 2)
+                return round(imc_calculado, 1)
+            except (TypeError, ValueError, ZeroDivisionError):
+                return None
+        return None
 
 class AtletaUpdateForm(forms.ModelForm):
     class Meta:
