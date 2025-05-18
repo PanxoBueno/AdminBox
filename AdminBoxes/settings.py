@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'gym_app',
     'colorfield',
     'PIL',
+
 ]
 X_FRAME_OPTIONS='SAMEORIGIN'
 MIDDLEWARE = [
