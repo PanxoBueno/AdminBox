@@ -53,7 +53,11 @@ AdmiBox es una plataforma web diseñada para gestionar gimnasios de CrossFit, fa
     python manage.py migrate
     ```
 
-6. Ejecuta el servidor:
+6. Realiza la creación de un superusuario
+   ```bash
+    python manage.py createsuperuser
+    ```
+8. Ejecuta el servidor:
     ```bash
     python manage.py runserver
     ```
@@ -64,19 +68,11 @@ AdmiBox es una plataforma web diseñada para gestionar gimnasios de CrossFit, fa
     ```
     http://127.0.0.1:8000
     ```
-
-2. Registra usuarios y comienza a gestionar tu gimnasio de CrossFit.
-
-## Contribuciones
-
-¡Las contribuciones son bienvenidas! Por favor, sigue los siguientes pasos para contribuir:
-
-1. Haz un fork del repositorio.
-2. Crea una nueva rama (`git checkout -b feature/nueva-caracteristica`).
-3. Realiza tus cambios y haz commit (`git commit -am 'Añadir nueva característica'`).
-4. Haz push a la rama (`git push origin feature/nueva-caracteristica`).
-5. Abre un Pull Request.
-
+2. Accede como superusuario:
+   ```
+    http://127.0.0.1:8000/admin
+    ```
+4. Registra usuarios y comienza a gestionar tu gimnasio de CrossFit.
 
 ---
 
