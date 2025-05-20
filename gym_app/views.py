@@ -62,7 +62,6 @@ def registro(request):
     else:
         form = UserRegisterForm()
     return render(request, 'registro.html', {'form': form})
-
 @login_required
 def home(request):
     biblioteca = Biblioteca.objects.all()
@@ -176,7 +175,6 @@ def borrar_entrenador(request, pk):
         messages.success(request, 'Entrenador eliminado con éxito.')
         return redirect('listar_entrenadores')
     return render(request, 'delete_entrenador.html', {'entrenador': usuario})
-
 @tipo_usuario_required('entrenador', 'admin')
 def crear_biblioteca(request):
     if request.method == 'POST':
@@ -189,7 +187,6 @@ def crear_biblioteca(request):
         form = BibliotecaForm()
     
     return render(request, 'create_biblioteca.html', {'form': form})
-
 @tipo_usuario_required('entrenador', 'admin')
 def crear_clase(request):
     initial_data = {}
@@ -212,7 +209,6 @@ def crear_clase(request):
         form = ClaseForm(initial=initial_data)
     
     return render(request, 'create_clase.html', {'form': form})
-
 @tipo_usuario_required('entrenador', 'admin')
 def borrar_clase(request, pk):
     clase = get_object_or_404(Clase, pk=pk)
@@ -395,8 +391,7 @@ def editar_marca_personal(request, marca_id):
         'form': form,
         'marca': marca
     })
-
-@login_required #modificar que solo puedan borrar sus propias marcas
+@login_required 
 def eliminar_marca_personal(request, marca_id):
     marca = get_object_or_404(MarcaPersonal, pk=marca_id)
     atleta_id = marca.atleta.usuario.pk
@@ -478,7 +473,6 @@ def listar_atleta(request):
         'atletas_with_reservas_count': atletas_with_reservas,
         'atletas_without_reservas_count': atletas_without_reservas
     })
-
 @login_required
 def clases_entrenador(request, entrenador_id):
     entrenador = get_object_or_404(Entrenador, pk=entrenador_id)
@@ -525,7 +519,6 @@ def listar_entrenadores(request):
     page_number = request.GET.get('page')
     usuarios_entrenador = paginator.get_page(page_number)
     return render(request, 'list_entrenador.html', {'entrenadores': usuarios_entrenador, 'query': query})
-
 @login_required
 def get_clase_info(request, clase_id):
     clase = get_object_or_404(Clase, pk=clase_id)
@@ -576,7 +569,6 @@ def borrar_rutina(request, rutina_id):
         messages.success(request, 'Rutina eliminada con éxito!')
         return redirect('detalle_rutinas', clase_id=clase_id)
     return render(request, 'borrar_rutina.html', {'rutina': rutina})
-
 @login_required
 def registrar_tiempo_wod(request, clase_id):
     clase = get_object_or_404(Clase, pk=clase_id)
@@ -635,7 +627,6 @@ def ver_ranking_wod(request, clase_id):
 
 def custom_permission_denied_view(request, exception):
     return render(request, '403.html', status=403)
-
 @login_required
 @tipo_usuario_required('entrenador', 'admin')
 def calendario_clases(request):
@@ -736,7 +727,6 @@ def calendario_clases(request):
     }
     
     return render(request, 'calendario_clases.html', context)
-
 @login_required
 @tipo_usuario_required('entrenador', 'admin')
 def atletas_por_categoria(request):
@@ -829,7 +819,6 @@ def atletas_por_categoria(request):
     }
     print(f"Total atletas encontrados: {atletas.count()}")
     return render(request, 'atletas_por_categoria.html', context)
-
 @login_required
 @tipo_usuario_required('entrenador', 'admin')
 def detalle_atleta(request, atleta_id):
@@ -864,7 +853,6 @@ def detalle_atleta(request, atleta_id):
     }
     
     return render(request, 'detalle_atleta.html', context)
-
 @login_required
 @tipo_usuario_required('entrenador', 'admin')
 def ver_reservas_atleta(request, atleta_id):
@@ -901,7 +889,6 @@ def ver_reservas_atleta(request, atleta_id):
     }
     
     return render(request, 'reservas_atleta.html', context)
-
 @login_required
 def detalle_atleta_plan(request, atleta_id):
     usuario = get_object_or_404(Usuario, pk=atleta_id, tipo_usuario='atleta')
@@ -913,7 +900,6 @@ def detalle_atleta_plan(request, atleta_id):
     }
     
     return render(request, 'detalle_atleta_plan.html', context)
-
 @login_required
 def mi_perfil(request):
     usuario = request.user
@@ -961,7 +947,6 @@ def mi_perfil(request):
     }
     
     return render(request, 'mi_perfil.html', context)
-
 @admin_required
 def editar_plan_atleta(request, atleta_id):
     usuario = get_object_or_404(Usuario, pk=atleta_id, tipo_usuario='atleta')
@@ -981,7 +966,6 @@ def editar_plan_atleta(request, atleta_id):
     }
     
     return render(request, 'editar_plan_atleta.html', context)
-
 @login_required
 def ranking_por_categoria(request):
     # Obtener parámetros de filtro
@@ -1040,3 +1024,151 @@ def ranking_por_categoria(request):
     }
     
     return render(request, 'ranking_por_categoria.html', context)
+@login_required
+def seleccionar_atleta_comparacion(request):
+# Obtener todos los atletas
+    atletas = Atleta.objects.all().select_related('usuario').order_by('usuario__first_name')
+    
+    # Si es atleta, excluirse a sí mismo
+    if hasattr(request.user, 'perfil_atleta'):
+        atletas = atletas.exclude(usuario=request.user)
+    
+    return render(request, 'seleccionar_comparacion.html', {
+        'atletas': atletas
+    })
+@login_required
+def seleccionar_segundo_atleta(request, atleta1_id):
+    atleta1 = get_object_or_404(Atleta, pk=atleta1_id)
+    atletas = Atleta.objects.exclude(pk=atleta1_id).select_related('usuario').order_by('usuario__first_name')
+    
+    return render(request, 'seleccionar_segundo_atleta.html', {
+        'atleta1': atleta1,
+        'atletas': atletas
+    })
+@login_required
+def comparar_marcas_atletas(request, atleta1_id, atleta2_id):
+    # Obtener los atletas
+    atleta1 = get_object_or_404(Atleta, pk=atleta1_id)
+    atleta2 = get_object_or_404(Atleta, pk=atleta2_id)
+    
+    # Verificar permisos
+    user = request.user
+    if user.tipo_usuario == 'atleta':
+        if not (hasattr(user, 'perfil_atleta') and 
+                (user.perfil_atleta.pk in [atleta1_id, atleta2_id])):
+            raise PermissionDenied("No tienes permiso para ver esta comparación")
+    # Obtener ejercicios comunes entre ambos atletas
+    ejercicios_atleta1 = set(MarcaPersonal.objects.filter(atleta=atleta1).values_list('ejercicio_id__nombre', flat=True).distinct())
+    ejercicios_atleta2 = set(MarcaPersonal.objects.filter(atleta=atleta2).values_list('ejercicio_id__nombre', flat=True).distinct())
+    ejercicios_comunes = list(ejercicios_atleta1.intersection(ejercicios_atleta2))
+    
+    # Obtener PRs (mejores marcas) para cada atleta en los ejercicios comunes
+    prs_comparativa = []
+    
+    for ejercicio in ejercicios_comunes:
+        # PR del atleta 1
+        pr_atleta1 = MarcaPersonal.objects.filter(
+            atleta=atleta1,
+            ejercicio_id__nombre=ejercicio
+        ).order_by('-peso_lb').first()
+        
+        # PR del atleta 2
+        pr_atleta2 = MarcaPersonal.objects.filter(
+            atleta=atleta2,
+            ejercicio_id__nombre=ejercicio
+        ).order_by('-peso_lb').first()
+        
+        if pr_atleta1 and pr_atleta2:
+            diferencia = pr_atleta1.peso_lb - pr_atleta2.peso_lb
+            porcentaje = (diferencia / pr_atleta2.peso_lb * 100) if pr_atleta2.peso_lb != 0 else 0
+            
+            prs_comparativa.append({
+                'ejercicio': ejercicio,
+                'atleta1': {
+                    'peso': pr_atleta1.peso_lb,
+                    'fecha': pr_atleta1.fecha,
+                    'comentarios': pr_atleta1.comentarios
+                },
+                'atleta2': {
+                    'peso': pr_atleta2.peso_lb,
+                    'fecha': pr_atleta2.fecha,
+                    'comentarios': pr_atleta2.comentarios
+                },
+                'diferencia': diferencia,
+                'porcentaje': round(porcentaje, 2)
+            })
+    
+    # Preparar datos para gráficos de progreso comparativo
+    series_data = []
+    
+    for ejercicio in ejercicios_comunes[:5]: # Limitar a los primeros 5 ejercicios para el gráfico  
+        # Datos atleta 1
+        marcas_atleta1 = MarcaPersonal.objects.filter(
+            atleta=atleta1,
+            ejercicio_id__nombre=ejercicio
+        ).order_by('fecha')
+        
+        # Datos atleta 2
+        marcas_atleta2 = MarcaPersonal.objects.filter(
+            atleta=atleta2,
+            ejercicio_id__nombre=ejercicio
+        ).order_by('fecha')
+        
+        if marcas_atleta1.exists() and marcas_atleta2.exists():
+            series_data.append({
+                'name': f"{atleta1.usuario.first_name} - {ejercicio}",
+                'data': [
+                    [m.fecha.strftime("%Y-%m-%d"), float(m.peso_lb)] 
+                    for m in marcas_atleta1
+                ],
+                'color': '#FF0000'  # Rojo para atleta 1
+            })
+            
+            series_data.append({
+                'name': f"{atleta2.usuario.first_name} - {ejercicio}",
+                'data': [
+                    [m.fecha.strftime("%Y-%m-%d"), float(m.peso_lb)] 
+                    for m in marcas_atleta2
+                ],
+                'color': '#0000FF'  # Azul para atleta 2
+            })
+    
+    context = {
+        'atleta1': atleta1,
+        'atleta2': atleta2,
+        'prs_comparativa': sorted(prs_comparativa, key=lambda x: abs(x['diferencia']), reverse=True),
+        'ejercicios_comunes': ejercicios_comunes,
+        'series_data_json': json.dumps(series_data),
+        'total_ejercicios_comunes': len(ejercicios_comunes)
+    }
+    
+    return render(request, 'comparar_marcas.html', context)
+
+@login_required
+@tipo_usuario_required('atleta')
+def dashboard_atleta_reservas(request):
+    usuario = request.user
+    if not hasattr(usuario, 'perfil_atleta'):
+        messages.error(request, 'Solo los atletas pueden acceder a este panel.')
+        return redirect('menu')
+    atleta = usuario.perfil_atleta
+
+    # Próximas reservas (clases futuras)
+    hoy = timezone.now().date()
+    reservas_futuras = Reserva.objects.filter(
+        atleta=atleta,
+        clase__fecha__gte=hoy
+    ).select_related('clase', 'clase__entrenador__usuario').order_by('clase__fecha', 'clase__horario')
+
+    # Historial de reservas (clases pasadas)
+    reservas_pasadas = Reserva.objects.filter(
+        atleta=atleta,
+        clase__fecha__lt=hoy
+    ).select_related('clase', 'clase__entrenador__usuario').order_by('-clase__fecha', '-clase__horario')
+
+    context = {
+        'atleta': usuario,
+        'reservas_futuras': reservas_futuras,
+        'reservas_pasadas': reservas_pasadas,
+    }
+    return render(request, 'dashboard_atleta_reservas.html', context)

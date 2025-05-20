@@ -1,6 +1,6 @@
 from django import forms
 from .models import Usuario, Biblioteca, Clase, Reserva, MarcaPersonal, Rutina, RankingWOD, Atleta
-from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from datetime import timedelta

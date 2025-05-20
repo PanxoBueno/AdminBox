@@ -45,6 +45,9 @@ urlpatterns = [
     path('atletas/<int:atleta_id>/plan/', views.detalle_atleta_plan, name='detalle_atleta_plan'),
     path('atletas/<int:atleta_id>/editar-plan/', views.editar_plan_atleta, name='editar_plan_atleta'),
     path('ranking-categorias/', views.ranking_por_categoria, name='ranking_por_categoria'),
-
+    path('comparar/', views.seleccionar_atleta_comparacion, name='seleccionar_atleta_comparacion'),
+    path('comparar/<int:atleta1_id>/', views.seleccionar_segundo_atleta, name='seleccionar_segundo_atleta'),
+    path('comparar/<int:atleta1_id>/<int:atleta2_id>/', views.comparar_marcas_atletas, name='comparar_marcas_atletas'),
+    path('dashboard/', views.dashboard_atleta_reservas, name='dashboard_atleta_reservas'),
 ]
     
