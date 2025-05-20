@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}Comparativa de Marcas{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-danger">
+            <i class="bi bi-graph-up-arrow"></i> Comparativa de Marcas
+        </h1>
+        <a href="{% url 'seleccionar_atleta_comparacion' %}" class="btn btn-outline-danger">
+            <i class="bi bi-arrow-left"></i> Comparar con otro atleta
+        </a>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-danger h-100">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-person-fill"></i> {{ atleta1.usuario.get_full_name }}
+                        <span class="badge 
+                            {% if atleta1.nivel == 'elite' %}bg-danger
+                            {% elif atleta1.nivel == 'rx' %}bg-warning text-dark
+                            {% elif atleta1.nivel == 'scaled' %}bg-primary
+                            {% elif atleta1.nivel == 'rookie' %}bg-info text-dark
+                            {% else %}bg-secondary
+                            {% endif %} ms-2">
+                            {{ atleta1.get_nivel_display }}
+                        </span>
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p class="mb-1"><strong>Peso:</strong> {{ atleta1.peso_kg|default:"-" }} kg</p>
+                            <p class="mb-1"><strong>Estatura:</strong> {{ atleta1.estatura_cm|default:"-" }} cm</p>
+                            <p class="mb-0"><strong>IMC:</strong> {{ atleta1.imc|default:"-" }}</p>
+                        </div>
+                        <div class="text-end">
+                            <p class="mb-1"><strong>Total PRs:</strong> {{ prs_comparativa|length }}</p>
+                            <p class="mb-0"><strong>Ejercicios en común:</strong> {{ total_ejercicios_comunes }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-primary h-100">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-person-fill"></i> {{ atleta2.usuario.get_full_name }}
+                        <span class="badge 
+                            {% if atleta2.nivel == 'elite' %}bg-danger
+                            {% elif atleta2.nivel == 'rx' %}bg-warning text-dark
+                            {% elif atleta2.nivel == 'scaled' %}bg-primary
+                            {% elif atleta2.nivel == 'rookie' %}bg-info text-dark
+                            {% else %}bg-secondary
+                            {% endif %} ms-2">
+                            {{ atleta2.get_nivel_display }}
+                        </span>
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p class="mb-1"><strong>Peso:</strong> {{ atleta2.peso_kg|default:"-" }} kg</p>
+                            <p class="mb-1"><strong>Estatura:</strong> {{ atleta2.estatura_cm|default:"-" }} cm</p>
+                            <p class="mb-0"><strong>IMC:</strong> {{ atleta2.imc|default:"-" }}</p>
+                        </div>
+                        <div class="text-end">
+                            <p class="mb-1"><strong>Total PRs:</strong> {{ prs_comparativa|length }}</p>
+                            <p class="mb-0"><strong>Ejercicios en común:</strong> {{ total_ejercicios_comunes }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if prs_comparativa %}
+        <div class="card mb-4">
+            <div class="card-header bg-dark text-white">
+                <h3 class="mb-0"><i class="bi bi-trophy-fill"></i> Comparativa de Récords Personales</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-danger">
+                            <tr>
+                                <th>Ejercicio</th>
+                                <th class="text-center">{{ atleta1.usuario.first_name }}</th>
+                                <th class="text-center">{{ atleta2.usuario.first_name }}</th>
+                                <th class="text-end">Diferencia</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pr in prs_comparativa %}
+                            <tr>
+                                <td><strong>{{ pr.ejercicio }}</strong></td>
+                                <td class="text-center">
+                                    <span class="badge bg-danger rounded-pill fs-6">{{ pr.atleta1.peso }} LB</span>
+                                    <small class="text-muted d-block">{{ pr.atleta1.fecha|date:"d/m/Y" }}</small>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary rounded-pill fs-6">{{ pr.atleta2.peso }} LB</span>
+                                    <small class="text-muted d-block">{{ pr.atleta2.fecha|date:"d/m/Y" }}</small>
+                                </td>
+                                <td class="text-end">
+                                    {% if pr.diferencia > 0 %}
+                                        <span class="text-success fw-bold">+{{ pr.diferencia }} LB (+{{ pr.porcentaje }}%)</span>
+                                    {% elif pr.diferencia < 0 %}
+                                        <span class="text-danger fw-bold">{{ pr.diferencia }} LB ({{ pr.porcentaje }}%)</span>
+                                    {% else %}
+                                        <span class="text-muted fw-bold">Iguales</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h3 class="mb-0"><i class="bi bi-graph-up"></i> Progreso Comparativo</h3>
+            </div>
+            <div class="card-body">
+                <div id="graficoComparativo" style="height: 400px;"></div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> No hay ejercicios en común para comparar entre estos atletas.
+        </div>
+    {% endif %}
+</div>
+
+{% if prs_comparativa %}
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const seriesData = JSON.parse('{{ series_data_json|escapejs }}');
+    
+    Highcharts.chart('graficoComparativo', {
+        chart: {
+            type: 'line'
+        },
+        title: {
+            text: 'Progreso Comparativo'
+        },
+        subtitle: {
+            text: 'Comparación de marcas personales a lo largo del tiempo'
+        },
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: {
+                day: '%e %b %Y'
+            },
+            title: {
+                text: 'Fecha'
+            }
+        },
+        yAxis: {
+            title: {
+                text: 'Peso (LB)'
+            },
+            min: 0
+        },
+        tooltip: {
+            headerFormat: '<b>{series.name}</b><br>',
+            pointFormat: '{point.x:%e %b %Y}: {point.y:.2f} LB'
+        },
+        plotOptions: {
+            series: {
+                marker: {
+                    enabled: true
+                }
+            }
+        },
+        series: seriesData,
+        colors: ['#FF0000', '#0000FF', '#FFA500', '#008000', '#800080'],
+        legend: {
+            layout: 'horizontal',
+            align: 'center',
+            verticalAlign: 'bottom'
+        }
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

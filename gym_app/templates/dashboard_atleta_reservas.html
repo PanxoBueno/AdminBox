@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Mi Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4 text-danger"><i class="bi bi-person"></i> Hola, {{ atleta.first_name }}!</h1>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            Próximas Clases Reservadas
+        </div>
+        <div class="card-body p-0">
+            {% if reservas_futuras %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Clase</th>
+                            <th>Fecha</th>
+                            <th>Horario</th>
+                            <th>Entrenador</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reserva in reservas_futuras %}
+                        <tr>
+                            <td>{{ reserva.clase.nombre }}</td>
+                            <td>{{ reserva.clase.fecha|date:"d/m/Y" }}</td>
+                            <td>{{ reserva.clase.get_horario_display }}</td>
+                            <td>{{ reserva.clase.entrenador.usuario.first_name }}</td>
+                            <td>
+                                <a href="{% url 'detalle_clase_entrenador' reserva.clase.id %}" class="btn btn-sm btn-outline-info">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info m-3">No tienes próximas clases reservadas.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            Historial de Clases Reservadas
+        </div>
+        <div class="card-body p-0">
+            {% if reservas_pasadas %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Clase</th>
+                            <th>Fecha</th>
+                            <th>Horario</th>
+                            <th>Entrenador</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reserva in reservas_pasadas %}
+                        <tr>
+                            <td>{{ reserva.clase.nombre }}</td>
+                            <td>{{ reserva.clase.fecha|date:"d/m/Y" }}</td>
+                            <td>{{ reserva.clase.get_horario_display }}</td>
+                            <td>{{ reserva.clase.entrenador.usuario.first_name }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info m-3">No tienes clases reservadas en el historial.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
