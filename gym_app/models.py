@@ -123,7 +123,7 @@ class Usuario(AbstractUser):
         if not self.tiene_plan_activo:
             return 0
         return (self.fecha_caducidad - timezone.now().date()).days
-    @property
+    
     def calcular_fecha_caducidad(self):
         if self.plan and self.fecha_contratacion:
             if self.plan in ['1', '2', '3', '4', '5']:  # Todos planes mensuales
@@ -142,7 +142,6 @@ class Atleta(models.Model):
     def __str__(self):
         return f"{self.usuario.username} - {self.get_nivel_display()}"
     
-    @property
     def imc(self):
         if self.peso_kg and self.estatura_cm:
             try:

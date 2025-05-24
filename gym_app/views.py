@@ -57,8 +57,6 @@ def registro(request):
                     )
                     messages.success(request, 'Entrenador registrado con éxito!')   
             return redirect('menu')
-            #login(request, user)
-            #return redirect('menu')
     else:
         form = UserRegisterForm()
     return render(request, 'registro.html', {'form': form})
@@ -1143,7 +1141,6 @@ def comparar_marcas_atletas(request, atleta1_id, atleta2_id):
     }
     
     return render(request, 'comparar_marcas.html', context)
-
 @login_required
 @tipo_usuario_required('atleta')
 def dashboard_atleta_reservas(request):
