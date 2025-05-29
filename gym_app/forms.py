@@ -106,6 +106,7 @@ class ClaseForm(forms.ModelForm):
         # Si se pasa una fecha por GET, establecerla como valor inicial
         if 'initial' in kwargs and 'fecha' in kwargs['initial']:
             self.fields['fecha'].initial = kwargs['initial']['fecha']
+
     class Meta:
         model = Clase
         fields = ['nombre', 'horario', 'fecha', 'entrenador', 'capacidad_maxima']
@@ -116,13 +117,39 @@ class ClaseForm(forms.ModelForm):
                 attrs={
                     'class': 'form-control',
                     'type': 'date',
-                    'format': 'yyyy-mm-dd'  # Formato que acepta el input date
+                    'format': 'yyyy-mm-dd'
                 },
-                format='%Y-%m-%d'  # Formato en que Django espera recibir la fecha
+                format='%Y-%m-%d'
             ),
             'entrenador': forms.Select(attrs={'class': 'form-select'}),
             'capacidad_maxima': forms.NumberInput(attrs={'class': 'form-control'}),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        fecha = cleaned_data.get('fecha')
+        horario = cleaned_data.get('horario')
+        entrenador = cleaned_data.get('entrenador')
+        
+        # Solo validar si todos los campos necesarios están presentes
+        if fecha and horario and entrenador:
+            # Verificar si ya existe una clase con el mismo entrenador, fecha y horario
+            queryset = Clase.objects.filter(
+                fecha=fecha,
+                horario=horario,
+                entrenador=entrenador
+            )
+            
+            # Si estamos editando una clase existente, excluirla de la verificación
+            if self.instance and self.instance.pk:
+                queryset = queryset.exclude(pk=self.instance.pk)
+            
+            if queryset.exists():
+                raise forms.ValidationError(
+                    f"El entrenador {entrenador} ya tiene una clase programada para el {fecha} a las {horario}."
+                )
+        
+        return cleaned_data
 
 class ReservaForm(forms.ModelForm):
     atleta = forms.ModelChoiceField(
